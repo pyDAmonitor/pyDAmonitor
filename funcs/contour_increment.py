@@ -26,7 +26,7 @@ def contour_increment(datasets, parms, fig_name=None):
     decimals = 2            # number of decimals to round for text boxes
     #contour_max = 2.0      # max contour level for colorbar increment plots
     ###################################################################################
-    cartopy.config['data_dir']='../data/cartopy'
+    #cartopy.config['data_dir']='../data/cartopy'
 
     ####
     dsInv = datasets['inv']
