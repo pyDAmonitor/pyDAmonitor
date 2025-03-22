@@ -11,7 +11,7 @@ conflict(pkgName)
 prepend_path("MODULEPATH", '/lfs5/BMC/wrfruc/gge/miniconda3/modulefiles')
 
 load("miniconda3/4.6.14")
-load("eva/1.0.0")
+load("eva/1.0.1")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)

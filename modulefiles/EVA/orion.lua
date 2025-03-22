@@ -8,7 +8,6 @@ local pkgNameVer = myModuleFullName()
 
 prepend_path("MODULEPATH", '/work2/noaa/da/python/opt/modulefiles/stack')
 
-load("hpc/1.2.0")
 load("miniconda3/4.6.14")
 load("eva/1.0.0")
 

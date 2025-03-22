@@ -8,11 +8,10 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/scratch1/NCEPDEV/da/python/opt/modulefiles/stack')
+prepend_path("MODULEPATH", '/scratch1/BMC/wrfruc/gge/Miniforge3')
 
-load("hpc/1.2.0")
-load("miniconda3/4.6.14")
-load("eva/1.0.0")
+load("Miniforge3/24.11.3-2")
+load("eva/1.0.1")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)
