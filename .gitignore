@@ -166,5 +166,7 @@ cython_debug/
 data/*
 # But don't ignore files in data/samples/
 !data/samples/
+!data/cartopy/
 # Track everything inside data/samples/
 !data/samples/**
+!data/cartopy/**

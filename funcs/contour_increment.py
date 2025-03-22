@@ -26,12 +26,7 @@ def contour_increment(datasets, parms, fig_name=None):
     decimals = 2            # number of decimals to round for text boxes
     #contour_max = 2.0      # max contour level for colorbar increment plots
     ###################################################################################
-    # Set cartopy shapefile path
-    platform = os.getenv('HOSTNAME').upper()
-    if 'ORION' in platform:
-        cartopy.config['data_dir']='/work/noaa/fv3-cam/sdegelia/cartopy'
-    elif 'HERCULES' in platform: # Will need to improve this once Hercules is supported
-        cartopy.config['data_dir']='/home/Donald.E.Lippi/cartopy'
+    cartopy.config['data_dir']='../data/cartopy'
 
     ####
     dsInv = datasets['inv']
