@@ -8,10 +8,10 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/gpfs/f6/bil-fire10-oar/world-shared/gge/miniconda3/modulefiles')
+prepend_path("MODULEPATH", '/gpfs/f6/bil-fire10-oar/world-shared/gge/Miniforge3/modulefiles')
 
-load("miniconda3/4.6.14")
-load("eva/1.0.0")
+load("Miniforge3/24.11.3-2")
+load("eva/1.0.1")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)

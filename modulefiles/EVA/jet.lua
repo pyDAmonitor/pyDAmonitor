@@ -8,7 +8,7 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/lfs5/BMC/wrfruc/gge/miniconda3/modulefiles')
+prepend_path("MODULEPATH", '/lfs6/BMC/wrfruc/gge/Miniforge3/modulefiles')
 
 load("miniconda3/4.6.14")
 load("eva/1.0.1")
