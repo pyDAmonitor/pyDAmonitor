@@ -25,4 +25,5 @@ else
 fi
 module list
 
-#${ushdir}/init.sh
+${ushdir}/init.sh
+nbstripout --install
