@@ -8,7 +8,7 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/work/noaa/zrtrr/gge/hercules/Miniforge3')
+prepend_path("MODULEPATH", '/work/noaa/zrtrr/gge/hercules/Miniforge3/modulefiles')
 
 load("Miniforge3/24.11.3-2")
 load("eva/1.0.1")
