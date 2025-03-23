@@ -26,4 +26,4 @@ fi
 module list
 
 ${ushdir}/init.sh
-nbstripout --install
+### nbstripout --install
