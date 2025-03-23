@@ -18,8 +18,7 @@ files = {
     "bkg": "../data/samples/mpasjedi/bkg.nc",
     "ana": "../data/samples/mpasjedi/ana.nc",
 }
-datasets = {}
-load_inv_bkg_ana(files, datasets)
+datasets = load_inv_bkg_ana(files)
 
 from contour_increment import contour_increment
 parms={
@@ -32,4 +31,6 @@ parms={
 parms['ilevel'] = 2
 contour_increment(datasets, parms, f"L{parms['ilevel']}")
 parms['ilevel'] = 20
+contour_increment(datasets, parms, f"L{parms['ilevel']}")
+parms['ilevel'] = 30
 contour_increment(datasets, parms, f"L{parms['ilevel']}")
