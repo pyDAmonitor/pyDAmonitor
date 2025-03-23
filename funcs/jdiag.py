@@ -4,6 +4,7 @@ def load_jdiag(filename):
     return Dataset(filename, "r")
 
 def get_jdiag_metadata(dataset, metadata):
+    metadata = {}
     metadata["latitude"] = dataset.groups["MetaData"].variables["latitude"][:]
     metadata["longitude"] = dataset.groups["MetaData"].variables["longitude"][:]
     metadata["pressure"] = dataset.groups["MetaData"].variables["pressure"][:]
@@ -11,8 +12,10 @@ def get_jdiag_metadata(dataset, metadata):
     if "aircraftFlightNumber" in dataset.groups["MetaData"].variables:
         metadata["aircraftFlightNumber"] = dataset.groups["MetaData"].variables["aircraftFlightNumber"][:]
         metadata["aircraftFlightPhase"] = dataset.groups["MetaData"].variables["aircraftFlightPhase"][:]
+    return metadata
 
-def get_jdiag_data(dataset, varname, data):
+def get_jdiag_data(dataset, varname):
+    data = {}
     data["ObsType"] = dataset.groups["ObsType"].variables[varname][:]
     data["ObsValue"] = dataset.groups["ObsValue"].variables[varname][:]
     if varname == "specificHumidity":
@@ -23,3 +26,4 @@ def get_jdiag_data(dataset, varname, data):
     if "oman" in dataset.groups:
         data["ombg"] = dataset.groups["ombg"].variables[varname][:]
         data["oman"] = dataset.groups["oman"].variables[varname][:]
+    return data

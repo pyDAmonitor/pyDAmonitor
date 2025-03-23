@@ -11,7 +11,7 @@ def histogram(group, bin_size, xlabel, title, fig_name=None):
     plt.title(title)
     plt.xticks(bins)
     print(bins)
-    if fig_name:                                                                                                                                                       
+    if fig_name:
         plt.savefig(fig_name, dpi=250, bbox_inches='tight')
     else:
         plt.show()
