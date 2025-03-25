@@ -26,8 +26,8 @@ def fit_rate(data, dz):
         h2 = h1 + dz
         tmp_a = oman[(height[:] >= h1) & (height[:] < h2)]
         tmp_b = ombg[(height[:] >= h1) & (height[:] < h2)]
-        bias_a = np.mean(tmp_a)
-        bias_b = np.mean(tmp_b)
+        # bias_a = np.mean(tmp_a)
+        # bias_b = np.mean(tmp_b)
         rms_a = np.sqrt(np.mean(tmp_a**2))
         rms_b = np.sqrt(np.mean(tmp_b**2))
         ratio[i] = (rms_b - rms_a) / rms_b

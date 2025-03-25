@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 from matplotlib.tri import Triangulation, TriAnalyzer
 import warnings
-import os
 import colormap
 import numpy as np
 import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import cartopy.feature as cfeature
 import cartopy.crs as ccrs
-import cartopy
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib
 
