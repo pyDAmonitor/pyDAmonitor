@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+from base import load_inv_bkg_ana
+from contour_increment import contour_increment
 
 
 def get_run_directory():
@@ -14,16 +16,12 @@ def get_run_directory():
 # add ../funcs/ to the current path
 sys.path.append(os.path.join(get_run_directory(), "../funcs"))
 
-from base import load_inv_bkg_ana
-
 files = {
     "inv": "../data/samples/mpasjedi/invariant.nc",
     "bkg": "../data/samples/mpasjedi/bkg.nc",
     "ana": "../data/samples/mpasjedi/ana.nc",
 }
 datasets = load_inv_bkg_ana(files)
-
-from contour_increment import contour_increment
 
 parms = {
     "plot_box_width": 80.0,

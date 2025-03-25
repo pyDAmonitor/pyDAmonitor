@@ -27,7 +27,7 @@ def source(bash_file, optional=False):
     os.environ.update(env_vars)
 
 
-### end of source(bash_file)
+# ---- end of source(bash_file)
 
 
 def get_run_directory():
@@ -59,7 +59,7 @@ def get_inv_bkg_ana_files(expdir, cdate):
         for line in file:
             line = line.strip()
             if line.endswith(end_str):
-                inv_file = line[: -len(end_str)].split(":", 1)[1].strip()[len("ln -snf") :].strip()
+                inv_file = line[:-len(end_str)].split(":", 1)[1].strip()[len("ln -snf"):].strip()
                 break
     # print(inv_file)
 
@@ -71,7 +71,7 @@ def get_inv_bkg_ana_files(expdir, cdate):
     with open(f"{prep_ic_log}", "r") as file:
         for line in file:
             if line.startswith(start_str):
-                bkg_file = line[len(start_str) :].strip()
+                bkg_file = line[len(start_str):].strip()
                 break
     # print(bkg_file)
 

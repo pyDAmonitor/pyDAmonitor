@@ -1,25 +1,25 @@
 #!/usr/bin/env python
+from matplotlib.tri import Triangulation, TriAnalyzer
+import warnings
+import os
+import colormap
+import numpy as np
+import matplotlib.ticker as mticker
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import cartopy.feature as cfeature
+import cartopy.crs as ccrs
+import cartopy
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 import matplotlib
 
 matplotlib.use("agg")
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import cartopy
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-import matplotlib.ticker as mticker
-import numpy as np
-import colormap
-import os
-import warnings
-from matplotlib.tri import Triangulation, TriAnalyzer
 
 warnings.filterwarnings("ignore")
 
 
 def contour_increment(datasets, parms, fig_name=None):
-    ############ USER INPUT ##########################################################
+    # ----------- USER INPUT ----------------------------------------------------------
     ilevel = parms["ilevel"]
     plot_box_width = parms["plot_box_width"]
     plot_box_height = parms["plot_box_height"]
@@ -28,10 +28,10 @@ def contour_increment(datasets, parms, fig_name=None):
     convert_theta_to_t = parms["convert_theta_to_t"]
     decimals = 2  # number of decimals to round for text boxes
     # contour_max = 2.0      # max contour level for colorbar increment plots
-    ###################################################################################
+    # ----------------------------------------------------------------------------------
     # cartopy.config['data_dir']='../data/cartopy'
 
-    ####
+    # ----
     dsInv = datasets["inv"]
     dsAna = datasets["ana"]
     dsBkg = datasets["bkg"]
@@ -123,6 +123,6 @@ def contour_increment(datasets, parms, fig_name=None):
         plt.show()
 
     # Print some final stats
-    print(f"Stats:")
+    print("Stats:")
     print(f" {longname} max: {inc_max}")
     print(f" {longname} min: {inc_min}")

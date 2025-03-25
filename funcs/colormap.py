@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 
@@ -37,6 +36,5 @@ def diff_colormap(clevs):
     colors[sizeby2] = gray
     colors[sizeby2 + 1] = gray
 
-    levs = 1
     cmap = mcolors.LinearSegmentedColormap.from_list(name="red_white_blue", colors=colors)
     return cmap
