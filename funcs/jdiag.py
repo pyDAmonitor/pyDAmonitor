@@ -19,7 +19,7 @@ def get_jdiag_metadata(dataset):
     return metadata
 
 
-def get_jdiag_data(dataset, varname):
+def get_jdiag_data(dataset, varname, get_metadata = True):
     # This will get both metadata and regular data
     data = {}
     for grp in dataset.groups:
@@ -28,10 +28,13 @@ def get_jdiag_data(dataset, varname):
                 data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname][:]
         else:
             if grp == "MetaData":
-                for var in dataset.groups['MetaData'].variables:
-                    data[var] = dataset.groups['MetaData'].variables[var][:]
+                if get_metadata:
+                    for var in dataset.groups['MetaData'].variables:
+                        data[var] = dataset.groups['MetaData'].variables[var][:]
             elif grp == "ObsError" and varname == "specificHumidity":
                 data["ObsError"] = dataset.groups["ObsError"].variables["relativeHumidity"][:]
+            elif varname == "brightnessTemperature" and ( grp == "ObsValue" or grp == "ObsValueAdj"):
+                data[grp] = dataset.groups[grp].variables["radiance"][:]
             else:
                 data[grp] = dataset.groups[grp].variables[varname][:]
     return data
