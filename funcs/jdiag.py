@@ -15,73 +15,23 @@ def get_jdiag_metadata(dataset):
     # this is used for get metadata only
     metadata = {}
     for var in dataset.groups['MetaData'].variables:
-        metadata[var] = dataset.groups['MetaData'].variables[var]
+        metadata[var] = dataset.groups['MetaData'].variables[var][:]
     return metadata
 
+
 def get_jdiag_data(dataset, varname):
-    # this will get both metadata and regular data
+    # This will get both metadata and regular data
     data = {}
     for grp in dataset.groups:
         if dataset.groups[grp].groups:
             for nestgrp in dataset.groups[grp].groups: # DiagnosticFlags
-                data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname]
+                data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname][:]
         else:
-            data[grp] = dataset.groups[grp].variables[varname]
-
-def get_jdiag_data2(dataset, varname):
-    # this will get both metadata and regular data
-    data = {}
-
-    # get metadata first
-    data["stationIdentification"] = dataset.groups["MetaData"].variables["stationIdentification"][:]
-    data["stationElevation"] = dataset.groups["MetaData"].variables["stationElevation"][:]
-    data["latitude"] = dataset.groups["MetaData"].variables["latitude"][:]
-    data["latitude"] = dataset.groups["MetaData"].variables["latitude"][:]
-    data["timeOffset"] = dataset.groups["MetaData"].variables["timeOffset"][:]
-    data["dateTime"] = dataset.groups["MetaData"].variables["dateTime"][:]
-    data["pressure"] = dataset.groups["MetaData"].variables["pressure"][:]
-    data["height"] = dataset.groups["MetaData"].variables["height"][:]
-    data["prepbufrReportType"] = dataset.groups["MetaData"].variables["prepbufrReportType"][:]
-    data["prepbufrDataLvlCat"] = dataset.groups["MetaData"].variables["prepbufrDataLvlCat"][:]
-    data["dumpReportType"] = dataset.groups["MetaData"].variables["dumpReportType"][:]
-    if "aircraftFlightNumber" in dataset.groups["MetaData"].variables:
-        data["aircraftFlightNumber"] = dataset.groups["MetaData"].variables["aircraftFlightNumber"][:]
-        data["aircraftFlightPhase"] = dataset.groups["MetaData"].variables["aircraftFlightPhase"][:]
-
-    # get regular data
-    data["ObsType"] = dataset.groups["ObsType"].variables[varname][:]
-    data["ObsValue"] = dataset.groups["ObsValue"].variables[varname][:]
-    if varname == "specificHumidity":
-        data["ObsValue"] = data["ObsValue"] * 1000
-        data["ObsError"] = dataset.groups["ObsError"].variables["relativeHumidity"][:]
-        if "DerivedObsError" in dataset.groups:
-            data["DerivedObsError"] = dataset.groups["DerivedObsError"].variables[varname][:]
-    else:
-        data["ObsError"] = dataset.groups["ObsError"].variables[varname][:]
-    data["QualityMarker"] = dataset.groups["QualityMarker"].variables[varname][:]
-    data["EffectiveError0"] = dataset.groups["EffectiveError0"].variables[varname][:]
-    data["EffectiveError1"] = dataset.groups["EffectiveError1"].variables[varname][:]
-    data["EffectiveError2"] = dataset.groups["EffectiveError2"].variables[varname][:]
-    data["EffectiveQC0"] = dataset.groups["EffectiveQC0"].variables[varname][:]
-    data["EffectiveQC1"] = dataset.groups["EffectiveQC1"].variables[varname][:]
-    data["EffectiveQC2"] = dataset.groups["EffectiveQC2"].variables[varname][:]
-    data["hofx0"] = dataset.groups["hofx0"].variables[varname][:]
-    data["hofx1"] = dataset.groups["hofx1"].variables[varname][:]
-    data["hofx2"] = dataset.groups["hofx2"].variables[varname][:]
-    data["ObsBias0"] = dataset.groups["ObsBias0"].variables[varname][:]
-    data["ObsBias1"] = dataset.groups["ObsBias1"].variables[varname][:]
-    data["ObsBias2"] = dataset.groups["ObsBias2"].variables[varname][:]
-    if "oman" in dataset.groups:
-        data["ombg"] = dataset.groups["ombg"].variables[varname][:]
-        data["oman"] = dataset.groups["oman"].variables[varname][:]
-        data["innov1"] = dataset.groups["innov1"].variables[varname][:]
-    return data
-
-
-def get_jdiag_sat_data(dataset, varname):
-    # This will get both metadata and regular data
-    data = {}
-    for var in dataset.groups['MetaData'].variables:
-        data[var] = dataset.groups['MetaData'].variables[var]
-
+            if grp == "MetaData":
+                for var in dataset.groups['MetaData'].variables:
+                    data[var] = dataset.groups['MetaData'].variables[var][:]
+            elif grp == "ObsError" and varname == "specificHumidity":
+                data["ObsError"] = dataset.groups["ObsError"].variables["relativeHumidity"][:]
+            else:
+                data[grp] = dataset.groups[grp].variables[varname][:]
     return data
