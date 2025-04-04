@@ -14,25 +14,21 @@ def get_valid_data(data, key):
 def get_jdiag_metadata(dataset):
     # this is used for get metadata only
     metadata = {}
-    metadata["stationIdentification"] = dataset.groups["MetaData"].variables["stationIdentification"][:]
-    metadata["stationElevation"] = dataset.groups["MetaData"].variables["stationElevation"][:]
-    metadata["latitude"] = dataset.groups["MetaData"].variables["latitude"][:]
-    metadata["latitude"] = dataset.groups["MetaData"].variables["latitude"][:]
-    metadata["timeOffset"] = dataset.groups["MetaData"].variables["timeOffset"][:]
-    metadata["dateTime"] = dataset.groups["MetaData"].variables["dateTime"][:]
-    metadata["pressure"] = dataset.groups["MetaData"].variables["pressure"][:]
-    metadata["height"] = dataset.groups["MetaData"].variables["height"][:]
-    metadata["prepbufrReportType"] = dataset.groups["MetaData"].variables["prepbufrReportType"][:]
-    metadata["prepbufrDataLvlCat"] = dataset.groups["MetaData"].variables["prepbufrDataLvlCat"][:]
-    metadata["dumpReportType"] = dataset.groups["MetaData"].variables["dumpReportType"][:]
-
-    if "aircraftFlightNumber" in dataset.groups["MetaData"].variables:
-        metadata["aircraftFlightNumber"] = dataset.groups["MetaData"].variables["aircraftFlightNumber"][:]
-        metadata["aircraftFlightPhase"] = dataset.groups["MetaData"].variables["aircraftFlightPhase"][:]
+    for var in dataset.groups['MetaData'].variables:
+        metadata[var] = dataset.groups['MetaData'].variables[var]
     return metadata
 
-
 def get_jdiag_data(dataset, varname):
+    # this will get both metadata and regular data
+    data = {}
+    for grp in dataset.groups:
+        if dataset.groups[grp].groups:
+            for nestgrp in dataset.groups[grp].groups: # DiagnosticFlags
+                data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname]
+        else:
+            data[grp] = dataset.groups[grp].variables[varname]
+
+def get_jdiag_data2(dataset, varname):
     # this will get both metadata and regular data
     data = {}
 
@@ -79,4 +75,13 @@ def get_jdiag_data(dataset, varname):
         data["ombg"] = dataset.groups["ombg"].variables[varname][:]
         data["oman"] = dataset.groups["oman"].variables[varname][:]
         data["innov1"] = dataset.groups["innov1"].variables[varname][:]
+    return data
+
+
+def get_jdiag_sat_data(dataset, varname):
+    # This will get both metadata and regular data
+    data = {}
+    for var in dataset.groups['MetaData'].variables:
+        data[var] = dataset.groups['MetaData'].variables[var]
+
     return data
