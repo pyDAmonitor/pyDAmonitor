@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.ticker as ticker
 
 
-def histogram(data, bin_size, n_xticks, xlabel, title, fig_name=None):
+def histogram(data, bin_size, n_xticks, xlabel="", title="", fig_name=None):
     bins = np.arange(int(data.min()), int(data.max()) + bin_size, bin_size)
     plt.figure()
     plt.hist(data, bins=bins, edgecolor="black")
