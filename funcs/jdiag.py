@@ -4,11 +4,12 @@ def load_jdiag(filename):
     return Dataset(filename, "r")
 
 
-def get_valid_data(data, key):
+def get_valid_subset(data, item, condition={"EffectiveQC2": 0}):
     import numpy as np
 
-    data2 = np.array(data[key])
-    return data2[data["EffectiveQC2"] == 0]
+    data2 = np.array(data[item])
+    key, value = next(iter(condition.items()))
+    return data2[data[key] == value]
 
 
 def get_jdiag_metadata(dataset):
@@ -19,12 +20,12 @@ def get_jdiag_metadata(dataset):
     return metadata
 
 
-def get_jdiag_data(dataset, varname, get_metadata = True):
+def get_jdiag_data(dataset, varname, get_metadata=True):
     # This will get both metadata and regular data
     data = {}
     for grp in dataset.groups:
         if dataset.groups[grp].groups:
-            for nestgrp in dataset.groups[grp].groups: # DiagnosticFlags
+            for nestgrp in dataset.groups[grp].groups:  # DiagnosticFlags
                 data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname][:]
         else:
             if grp == "MetaData":
@@ -33,7 +34,7 @@ def get_jdiag_data(dataset, varname, get_metadata = True):
                         data[var] = dataset.groups['MetaData'].variables[var][:]
             elif grp == "ObsError" and varname == "specificHumidity":
                 data["ObsError"] = dataset.groups["ObsError"].variables["relativeHumidity"][:]
-            elif varname == "brightnessTemperature" and ( grp == "ObsValue" or grp == "ObsValueAdj"):
+            elif varname == "brightnessTemperature" and (grp == "ObsValue" or grp == "ObsValueAdj"):
                 data[grp] = dataset.groups[grp].variables["radiance"][:]
             else:
                 data[grp] = dataset.groups[grp].variables[varname][:]
