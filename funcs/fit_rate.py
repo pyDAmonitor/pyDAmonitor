@@ -1,12 +1,12 @@
-from jdiag import get_valid_data
+from jdiag import get_valid_subset
 from plt_profile import plt_profile
 import numpy as np
 
 
 def fit_rate(data, dz):
-    oman = get_valid_data(data, "oman")
-    ombg = get_valid_data(data, "ombg")
-    height = get_valid_data(data, "height")
+    oman = get_valid_subset(data, "oman")
+    ombg = get_valid_subset(data, "ombg")
+    height = get_valid_subset(data, "height")
     print("bias: oma=", np.mean(oman), "omb=", np.mean(ombg))
 
     rms_a = np.sqrt(np.mean(oman**2))

@@ -105,21 +105,21 @@ def query_dataset(dataset):
                     print(text + nestgrp)
                     text2 = "    "
                     for var in dataset.groups[grp].groups[nestgrp].variables:
-                        text2 += f"{var},"
+                        text2 += f"{var}, "
                     print(text + text2.rstrip(","))
             else:
                 for var in dataset.groups[grp].variables:
-                    text += f"{var},"
+                    text += f"{var}, "
                 print(text.rstrip(","))
     else:
         text = ""
         for var in dataset.variables:
-            text += f"{var},"
+            text += f"{var}, "
         print(text.rstrip(","))
 
 
 def query_data(data):
     text = ""
     for var in data:
-        text += f"{var},"
+        text += f"{var}, "
     print(text.rstrip(","))
