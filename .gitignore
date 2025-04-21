@@ -173,3 +173,4 @@ data/*
 !data/cartopy/**
 #
 contrib/*.txt
+misc
