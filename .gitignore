@@ -171,3 +171,5 @@ data/*
 # Track everything inside data/samples/
 !data/samples/**
 !data/cartopy/**
+#
+contrib/*.txt
