@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # flake8: noqa
+import colormap
+import warnings
 import os
 import sys
 import matplotlib
@@ -10,16 +12,14 @@ import numpy as np
 import pygrib
 from netCDF4 import Dataset
 matplotlib.use('agg')
-import warnings
 warnings.filterwarnings('ignore')
-import colormap
 
 var = "T"
-expt="UV"
-#var=sys.argv[1]
-#expt=sys.argv[2]
+expt = "UV"
+# var=sys.argv[1]
+# expt=sys.argv[2]
 
-lev=32
+lev = 32
 
 lat_obs, lon_obs = 36.265, 264.855
 extent = 8   # domain box, obs(center) lat/lon +/- extent
@@ -28,38 +28,38 @@ lat_ur = lat_obs + extent
 lon_ll = lon_obs - extent
 lon_ur = lon_obs + extent
 
-maindir="/scratch2/BMC/zrtrr/chunhua/tmp/RRFSv1_13km/rrfs.v0.8.6/stmp/2024050601"
-analdir=f"anal_conv_gsi.single{expt}"
-#figdir=f"{maindir}/{analdir}"
-figdir="./"
+maindir = "/scratch2/BMC/zrtrr/chunhua/tmp/RRFSv1_13km/rrfs.v0.8.6/stmp/2024050601"
+analdir = f"anal_conv_gsi.single{expt}"
+# figdir=f"{maindir}/{analdir}"
+figdir = "./"
 
 # read T, u, v from fv3_dynvars
 if var == "T" or var == "u" or var == "v":
-    #anal = f"{maindir}/{analdir}/fv3_dynvars"
-    #bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_dynvars"
+    # anal = f"{maindir}/{analdir}/fv3_dynvars"
+    # bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_dynvars"
     anal = "../data/samples/fv3/fv3_dynvars.ana"
     bkg = "../data/samples/fv3/fv3_dynvars.bkg"
 if var == "sphum":
-    #anal = f"{maindir}/{analdir}/fv3_tracer"
-    #bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_tracer"
+    # anal = f"{maindir}/{analdir}/fv3_tracer"
+    # bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_tracer"
     anal = "../data/samples/fv3/fv3_tracer.ana"
     bkg = "../data/samples/fv3/fv3_tracer.bkg"
-#static = f"{maindir}/anal_conv_gsi.fresh/fv3_grid_spec"
+# static = f"{maindir}/anal_conv_gsi.fresh/fv3_grid_spec"
 static = "../data/samples/fv3/fv3_grid_spec"
 
 # Open NETCDF4 dataset for reading
 nc_a = Dataset(anal, mode='r')
 nc_b = Dataset(bkg, mode='r')
-a = nc_a.variables[var][0, lev, :, :].astype(np.float64) # float T(Time, zaxis_1=65, yaxis_2, xaxis_1) ;
-b = nc_b.variables[var][0, lev, :, :].astype(np.float64) 
+a = nc_a.variables[var][0, lev, :, :].astype(np.float64)  # float T(Time, zaxis_1=65, yaxis_2, xaxis_1) ;
+b = nc_b.variables[var][0, lev, :, :].astype(np.float64)
 
 # read lat,lon information
 f_latlon = Dataset(static, "r")
 lats = np.array(f_latlon.variables['grid_lat'][::])   # float grid_latt(grid_yt=252, grid_xt=420)
 lons = np.array(f_latlon.variables['grid_lon'][::])   # float grid_lont(grid_yt, grid_xt)
 
-def plot_data(data, lat, lon, title):
 
+def plot_data(data, lat, lon, title):
     '''
     Input parameters:
 
@@ -95,28 +95,30 @@ def plot_data(data, lat, lon, title):
                 llcrnrlat=lat_ll,
                 urcrnrlat=lat_ur,
                 resolution='c',
-               )
+                )
 
     lat_trim, lon_trim = trim_grid()
-    plt.figure(figsize=(8,8))
+    plt.figure(figsize=(8, 8))
     x, y = m(lon_trim, lat_trim)
 
     clevs, cm = eq_contours()
 
     cs = m.contourf(x, y, data, clevs, cmap=cm, extend='both')
-    m.drawcoastlines();
-    m.drawmapboundary();
-    m.drawstates();
-    m.drawparallels(np.arange(-90.,120.,2),labels=[1,0,0,0]);
-    m.drawmeridians(np.arange(-180.,180.,2),labels=[0,0,0,1]);
-    plt.colorbar(cs,orientation='vertical', shrink=0.5);
+    m.drawcoastlines()
+    m.drawmapboundary()
+    m.drawstates()
+    m.drawparallels(np.arange(-90., 120., 2), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180., 180., 2), labels=[0, 0, 0, 1])
+    plt.colorbar(cs, orientation='vertical', shrink=0.5)
     plt.title(f"{title}")
    # plt.savefig(f"{figdir}/increment_{var}_z{lev}.png", dpi=200, bbox_inches='tight')
     plt.savefig(f"{figdir}/increment_{var}_z{lev}.png", bbox_inches='tight')
+
 
 def main():
     title = f'Analysis Increment for {var}'
     plot_data(a-b, lats, lons, title)
 
-if __name__ == '__main__': main()
 
+if __name__ == '__main__':
+    main()
