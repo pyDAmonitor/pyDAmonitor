@@ -174,3 +174,5 @@ data/*
 #
 contrib/*.txt
 misc
+notebooks/data
+notebooks/keyframes
