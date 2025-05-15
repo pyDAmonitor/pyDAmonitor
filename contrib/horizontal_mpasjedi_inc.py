@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 from matplotlib.tri import Triangulation, TriAnalyzer
 import warnings
-import os
 import colormap
 import numpy as np
 import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import cartopy.feature as cfeature
 import cartopy.crs as ccrs
-import cartopy
-import matplotlib.colors as mcolors
+# import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import matplotlib
@@ -17,7 +15,7 @@ matplotlib.use('agg')
 
 warnings.filterwarnings('ignore')
 
-############ USER INPUT ##########################################################
+# ------------ USER INPUT ----------------------------------------------------------
 plot_var = "Increment"
 decimal = 3            # number of decimals to round for text boxes
 
@@ -60,7 +58,7 @@ def main():
     # varible to plot
     variable = "T"
 
-    target_lat, target_lon = 36.265, -95.145
+    # target_lat, target_lon = 36.265, -95.145
 
     # Open NETCDF4 dataset for reading
     nc_a = Dataset(janalysis, mode='r')
@@ -71,7 +69,7 @@ def main():
     lats = np.array(f_latlon.variables['latCell'][:]) * 180.0 / np.pi  # Latitude of cells, rad
     lons0 = np.array(f_latlon.variables['lonCell'][:]) * 180.0 / np.pi  # Longitude of cells, rad
     lons = np.where(lons0 > 180.0, lons0 - 360.0, lons0)
-    z = f_latlon.variables['zgrid'][:]  # Geometric height of layer interfaces, m MSL
+    # z = f_latlon.variables['zgrid'][:]  # Geometric height of layer interfaces, m MSL
 
     # Grab variables
     if variable == "T":  # Convert to temperature

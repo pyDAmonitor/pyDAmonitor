@@ -2,8 +2,7 @@ import warnings
 from netCDF4 import Dataset
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy as np
-import xarray as xr
+# import xarray as xr
 import colormap
 import matplotlib
 matplotlib.use('agg')
@@ -46,12 +45,12 @@ def get_Index(axis, target, lats, lons, tolerance=0.2):
         value = target  # the constant lat value
         mask = np.abs(lats - value) < tolerance
         sort_idx = np.argsort(lons[mask])
-        coord = lons[mask][sort_idx]
+        # coord = lons[mask][sort_idx]
     else:
         value = target  # the constant lon value
         mask = np.abs(lons - value) < tolerance
         sort_idx = np.argsort(lats[mask])
-        coord = lats[mask][sort_idx]
+        # coord = lats[mask][sort_idx]
 
     return mask, sort_idx
 
@@ -81,7 +80,7 @@ def main():
     lats = np.array(f_latlon.variables['latCell'][:]) * 180.0 / np.pi  # Latitude of cells, rad
     lons0 = np.array(f_latlon.variables['lonCell'][:]) * 180.0 / np.pi  # Longitude of cells, rad
     lons = np.where(lons0 > 180.0, lons0 - 360.0, lons0)
-    z = f_latlon.variables['zgrid'][:]  # Geometric height of layer interfaces, m MSL
+    # z = f_latlon.variables['zgrid'][:]  # Geometric height of layer interfaces, m MSL
 
     # Grab variables
     if variable == "T":  # Convert to temperature
@@ -113,7 +112,7 @@ def main():
     vlevs = np.arange(1, jedi_a.shape[1]+1)  # model vertical levels
     jedi_inc = jedi_a - jedi_b  # the increment
 
-    #################### the vertical profile begin #################
+    # ------------------- the vertical profile begin -----------------
     # The nearest grid cell to the desired lat/lon
     dist = np.sqrt((lats - target_lat)**2 + (lons - target_lon)**2)
     idx = np.argmin(dist)
@@ -143,9 +142,9 @@ def main():
     plt.tight_layout()
     plt.savefig(f'{figdir}/{variable}_inc_z.png')
     plt.close()
-    #################### the vertical profile end #################
+    # ------------------- the vertical profile end -----------------
 
-    #################### longitude-pressure(/levels) cross section begin #################
+    # ------------------ longitude-pressure(/levels) cross section begin -----------------
     # transpose
     jedi_inc_T = jedi_inc.T
     pres_T = pres_b.T  # pressure levels
@@ -175,10 +174,9 @@ def main():
     plt.tight_layout()
     plt.savefig(f'{figdir}/{variable}_inc_xp.png')
     plt.close()
-    #################### longitude-pressure(/levels) cross section end #################
+    # ------------------ longitude-pressure(/levels) cross section end -----------------
 
-    #################### latitude-pressure(/levels) cross section begin #################
-
+    # ------------------ latitude-pressure(/levels) cross section begin -----------------
     # make latitude-pressure(/levels) cross section
     axis = 'longitude'
     mask2, sort_idx2 = get_Index(axis, target_lon, lats, lons)
@@ -203,7 +201,7 @@ def main():
     plt.tight_layout()
     plt.savefig(f'{figdir}/{variable}_inc_yp.png')
     plt.close()
-    #################### latitude-pressure(/levels) cross section end #################
+    # ------------------ latitude-pressure(/levels) cross section end -----------------
 
 
 if __name__ == '__main__':

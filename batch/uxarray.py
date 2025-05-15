@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import warnings
+# import warnings
 import cartopy.crs as ccrs
 import geoviews.feature as gf
 import holoviews as hv
-from holoviews import opts
+# from holoviews import opts
 import uxarray as ux
 import numpy as np
 hv.extension("bokeh")
