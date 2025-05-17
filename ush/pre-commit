@@ -7,11 +7,10 @@
 #
 STAGED_NOTEBOOKS=$(git diff --cached --name-only | grep "^notebooks/.*\.ipynb$")
 if ! command -v nbstripout >/dev/null 2>&1; then
-  echo "nbstripout is not available in the current environment."
-  echo "source ush/load_bokeh.sh to make nbstripout available"
+  echo "source ush/load_bokeh.sh first"
   exit 1
 fi
 for notebook in ${STAGED_NOTEBOOKS[@]}; do
-  nbstripout ${notebook}
+  ush/clean_notebooks.py ${notebook}
   git add ${notebook}
 done
