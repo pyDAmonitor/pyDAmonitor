@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 
 if len(sys.argv) != 2:
-    print(f"Usage: {sys.argv[0]} <filename/directory>")
+    print(f"Usage: {os.path.basename(sys.argv[0])} <filename/directory>")
     exit()
 # ~~
 tmp = sys.argv[1].rstrip("/")
