@@ -168,6 +168,7 @@ data/*
 # But don't ignore files in data/samples/
 !data/samples/
 !data/cartopy/
+!data/shapes_county
 # Track everything inside data/samples/
 !data/samples/**
 !data/cartopy/**
