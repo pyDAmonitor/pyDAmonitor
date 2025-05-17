@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import warnings
 from netCDF4 import Dataset
 import numpy as np
