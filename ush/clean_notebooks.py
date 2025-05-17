@@ -25,5 +25,5 @@ for filename in files:
     for cell in nb.ntbk.cells:
         if 'execution_count' in cell:
             cell['execution_count'] = None
-    #nb.clear('metadata', preserve=["kernelspec", "language_info"])
+    # nb.clear('metadata', preserve=["kernelspec", "language_info"])
     nb.save(str(filename))
