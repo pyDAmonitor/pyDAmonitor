@@ -1,7 +1,31 @@
 import os
 import sys
+import subprocess
 from netCDF4 import Dataset
 import pandas as pd
+
+
+def source(bash_file, optional=False):
+    """
+    Source a Bash file and capture the environment variables
+    """
+    # check if bash_file exists
+    command = f"source {bash_file} && env"
+    proc = subprocess.Popen(
+        ["bash", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        if optional:
+            return  # do nothing for optional config files
+        else:
+            raise Exception(f"Error sourcing bash file: {stderr}")
+    env_vars = {}
+    for line in stdout.splitlines():
+        key, _, value = line.partition("=")
+        env_vars[key] = value
+    # Update the current environment
+    os.environ.update(env_vars)
 
 
 def get_run_directory():
@@ -94,7 +118,7 @@ def query_dataset(dataset):
 
 def query_data(data):
     text = ""
-    if data.data:  # 
+    if data.data:
         data = data.data
     for var in data:
         text += f"{var}, "
@@ -109,4 +133,3 @@ def to_dataframe(obsDF):
     for key, value in obsDF.items():
         data[key] = value
     return pd.DataFrame(data)
-

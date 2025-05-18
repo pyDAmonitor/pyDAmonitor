@@ -1,10 +1,9 @@
 from netCDF4 import Dataset
 import numpy as np
-import pandas as pd
 
 
 class _ObsDF:  # DataFrame-like obs structure
-    def __init__(self, data):        
+    def __init__(self, data):
         self.data = data
 
     def __getitem__(self, key):
@@ -14,7 +13,8 @@ class _ObsDF:  # DataFrame-like obs structure
         try:
             return self.__getitem__(name)
         except KeyError as e:
-            raise AttributeError(f"No variable '{name}_{self.varname}' found.") from e        
+            raise AttributeError(f"No variable '{name}_{self.varname}' found.") from e
+
 
 class ioda:
     def __init__(self, filepath):
@@ -38,8 +38,8 @@ class ioda:
 
         #
         self._get_metadata()
-        
-        # Remove groups, provide direct access to varaibles, such as ioda.t, ioda.q, ioda.u, ioda.v, etc 
+
+        # Remove groups, provide direct access to varaibles, such as ioda.t, ioda.q, ioda.u, ioda.v, etc
         for var in ["airTemperature", "windEastward", "windNorthward", "specificHumidity"]:
             self._get_data_by_varname(var)
 
@@ -47,7 +47,7 @@ class ioda:
         data2 = np.array(data[item])
         key, value = next(iter(condition.items()))
         return data2[data[key] == value]
-    
+
     def _get_metadata(self):
         # this is used for get metadata only
         dataset = self.dataset
@@ -55,9 +55,9 @@ class ioda:
         for var in dataset.groups['MetaData'].variables:
             metadata[var] = dataset.groups['MetaData'].variables[var][:]
         self.metadata = metadata
-    
+
     def _get_data_by_varname(self, varname):
-        dataset = self.dataset        
+        dataset = self.dataset
         # This will get both metadata and regular data
         data = {}
         only_has_metadata = True
@@ -67,7 +67,7 @@ class ioda:
                     data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname][:]
                     only_has_metadata = False
             else:
-                if grp == "MetaData":                    
+                if grp == "MetaData":
                     for var in dataset.groups['MetaData'].variables:
                         if var != "longitude_latitude_pressure":
                             data[var] = dataset.groups['MetaData'].variables[var][:]
@@ -80,7 +80,7 @@ class ioda:
                 elif varname in dataset.groups[grp].variables:
                     data[grp] = dataset.groups[grp].variables[varname][:]
                     only_has_metadata = False
-                    
+
         # assign the data dict
         if only_has_metadata:
             data = {}
@@ -91,11 +91,11 @@ class ioda:
         elif varname == "windNorthward":
             self.v = _ObsDF(data)
         elif varname == "specificHumidity":
-            self.q = _ObsDF(data)           
-            
+            self.q = _ObsDF(data)
+
     def __getitem__(self, key):
         # Enable ioda["t"]
-        if key in ["t", "airTemperature"]:            
+        if key in ["t", "airTemperature"]:
             return self.t
         elif key in ["u", "windEastward"]:
             return self.u
@@ -104,7 +104,7 @@ class ioda:
         elif key in ["q", "specificHumidity"]:
             return self.q
         raise KeyError(f"Key '{key}' not found.")
-            
+
     def __getattr__(self, name):
         # Enable myioda.t (only called if attribute not found normally)
         try:
