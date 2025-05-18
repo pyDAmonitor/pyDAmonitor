@@ -129,7 +129,4 @@ def to_dataframe(obsDF):
     obsDF = obsDF
     if obsDF.data:
         obsDF = obsDF.data
-    data = {}
-    for key, value in obsDF.items():
-        data[key] = value
-    return pd.DataFrame(data)
+    return pd.DataFrame(obsDF)

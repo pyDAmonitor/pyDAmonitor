@@ -2,7 +2,7 @@ import numpy as np
 from DAmonitor.base import to_dataframe
 
 
-def fit_rate(data):
+def fit_rate(data, dz=1000):
     df = to_dataframe(data)
 
     # 1. Filter valid data (both 'oman' and 'ombg' are not NaN)
@@ -20,7 +20,6 @@ def fit_rate(data):
     print(f"Overall fit_rate: {fit_rate_overall:.4%}")
 
     # 3. Bin data by height every dz meters
-    dz = 1000
     valid_df["height_bin"] = (valid_df["height"] // dz) * dz  # floor to nearest 1000
 
     # 4. Group by height_bin and compute RMS and fit_rate
