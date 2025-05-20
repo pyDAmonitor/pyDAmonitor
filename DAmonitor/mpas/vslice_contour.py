@@ -3,7 +3,7 @@ import numpy as np
 import xarray as xr
 
 
-def vslice_contour(uxvar, lon=None, lat=None, minval=None, maxval=None, width=600, height=530, clevels=20):
+def vslice_contour(uxvar, lon=None, lat=None, cmin=None, cmax=None, width=600, height=530, clevels=20):
     if lon is None and lat is None:
         print("Need to specify either a const lon or a const lat")
         return
@@ -40,14 +40,14 @@ def vslice_contour(uxvar, lon=None, lat=None, minval=None, maxval=None, width=60
 
     ux_vslice_selected = ux_vslice.isel(n_face=face_DataArray, ignore_grid=True)
     # Get min and max
-    if minval is None:
-        amin = ux_vslice_selected.min().item()
-        minval = math.floor(amin)
-    if maxval is None:
-        amax = ux_vslice.max().item()
-        maxval = math.ceil(amax)
+    amin = ux_vslice_selected.min().item()
+    amax = ux_vslice.max().item()
+    if cmin is None:
+        cmin = math.floor(amin)
+    if cmax is None:
+        cmax = math.ceil(amax)
 
-    levels = np.linspace(minval, maxval, num=clevels)
+    levels = np.linspace(cmin, cmax, num=clevels)
     if lon is not None:  # along constant lon
         title = f"constant_lon={lon} min={amin:.1f} max={amax:.1f}"
     if lat is not None:  # along constant lat
