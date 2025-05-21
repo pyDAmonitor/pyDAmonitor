@@ -1,9 +1,9 @@
 import math
 import holoviews as hv
 import numpy as np
+import matplotlib.pyplot as plt
 
-
-def hslice_contour(ux_hslice, title, cmin=None, cmax=None, width=800, height=500, clevs=20):
+def hslice_contour(ux_hslice, title, cmin=None, cmax=None, width=800, height=500, clevs=20, cmap="coolwarm", symmetric_cmap=False):
     # Get min and max
     amin = ux_hslice.min().item()
     amax = ux_hslice.max().item()
@@ -12,6 +12,12 @@ def hslice_contour(ux_hslice, title, cmin=None, cmax=None, width=800, height=500
         cmin = math.floor(amin)
     if cmax is None:
         cmax = math.ceil(amax)
+    if symmetric_cmap:  # to get a symmetric color map when cmin < 0, cmax >0
+        cmax = max(abs(cmin), cmax)
+        cmin = -cmax
+
+    if isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
 
     # generate contour plot
     contour_plot = hv.operation.contours(
@@ -21,7 +27,9 @@ def hslice_contour(ux_hslice, title, cmin=None, cmax=None, width=800, height=500
     ).opts(
         line_color=None,  # line_width=0.001
         width=width, height=height,
-        cmap='coolwarm', clim=(cmin, cmax), colorbar=True,  # cmap="inferno"
+        cmap='coolwarm',
+        clim=(cmin, cmax),
+        colorbar=True,  # cmap="inferno"
         show_legend=False, tools=['hover'], title=title,
     )
 
