@@ -3,6 +3,7 @@ import holoviews as hv
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def hslice_contour(ux_hslice, title, cmin=None, cmax=None, width=800, height=500, clevs=20, cmap="coolwarm", symmetric_cmap=False):
     # Get min and max
     amin = ux_hslice.min().item()
