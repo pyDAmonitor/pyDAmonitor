@@ -11,6 +11,9 @@ case ${MACHINE} in
   hera)
     FIX_RRFS_LOCATION=/scratch2/BMC/rtrr/FIX_pyDAmonitor
     ;;
+  ursa)
+    FIX_RRFS_LOCATION=/scratch4/BMC/rtrr/FIX_pyDAmonitor
+    ;;
   jet)
     FIX_RRFS_LOCATION=/lfs5/BMC/nrtrr/FIX_pyDAmonitor
     ;;
