@@ -20,6 +20,8 @@ case $(hostname -f) in
   hecflow01) MACHINE=hera ;; ### heraecflow01
 
   ufe*) MACHINE=ursa ;;
+  derecho*) MACHINE=derecho ;;
+  casper*) MACHINE=derecho ;;
 
   s4-submit.ssec.wisc.edu) MACHINE=s4 ;; ### s4
 

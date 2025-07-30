@@ -13,6 +13,9 @@ case ${MACHINE} in
   ursa)
     EXEC_DIR=/scratch3/BMC/wrfruc/gge/Miniforge3/envs/bokeh/bin
     ;;
+  derecho)
+    EXEC_DIR=/glade/work/geguo/Miniforge3/envs/bokeh/bin
+    ;;
   jet)
     EXEC_DIR=/lfs6/BMC/wrfruc/gge/Miniforge3/envs/bokeh/bin
     ;;
