@@ -27,7 +27,7 @@ case ${MACHINE} in
     if [[ -d /gpfs/f5 ]]; then
       FIX_RRFS_LOCATION=/gpfs/f5/gsl-glo/world-shared/role.rrfsfix/FIX_pyDAmonitor
     elif [[ -d /gpfs/f6 ]]; then
-      FIX_RRFS_LOCATION=/gpfs/f6/bil-fire10-oar/world-shared/role.rrfsfix/FIX_pyDAmonitor
+      FIX_RRFS_LOCATION=/gpfs/f6/bil-fire10-oar/world-shared/FIX_pyDAmonitor
     else
       echo "unsupported gaea cluster: ${MACHINE}"
     fi
