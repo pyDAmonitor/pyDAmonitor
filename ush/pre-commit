@@ -6,8 +6,8 @@
 # it wants to stop the commit.
 #
 STAGED_NOTEBOOKS=$(git diff --cached --name-only | grep "^notebooks/.*\.ipynb$")
-if ! command -v nbstripout >/dev/null 2>&1; then
-  echo "source ush/load_bokeh.sh first"
+if [[ "$CONDA_DEFAULT_ENV" != "pyDAmonitor"  ]]; then
+  echo "source ush/load_pyDAmonitor.sh first"
   exit 1
 fi
 for notebook in ${STAGED_NOTEBOOKS[@]}; do

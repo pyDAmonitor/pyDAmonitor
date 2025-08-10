@@ -1,0 +1,39 @@
+name: pyDAmonitor
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - autopep8
+  - basemap
+  - bokeh
+  - bokeh_sampledata
+  - cartopy
+  - flake8
+  - folium
+  - geopandas
+  - ghp-import
+  - h5netcdf
+  - herbie-data
+  - jupyterlab
+  - jupyterlab-myst
+  - jupyter-sphinx
+  - jupyter-book
+  - matplotlib
+  - mystmd
+  - myst-parser
+  - nbclean
+  - netCDF4
+  - pip
+  - plotly
+  - s3fs
+  - scipy
+  - seaborn
+  - sphinx
+  - sphinx-book-theme
+  - shellcheck
+  # - uxarray  # for now until releasing vertical cross-sections
+  - xarray
+  - yamlfmt
+  - yamllint
+  - pip:
+    - git+https://github.com/UXARRAY/uxarray@interpolate-cross-section  # remove when you revert uxarray above!

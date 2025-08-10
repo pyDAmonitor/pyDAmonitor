@@ -14,16 +14,15 @@ module purge
 module use ${ushdir}/../modulefiles
 if [[ "${MACHINE}" == "gaea" ]]; then
   if [[ -d /gpfs/f5 ]]; then
-    module load BOKEH/${MACHINE}C5
+    module load pyDAmonitor/${MACHINE}C5
   elif [[ -d /gpfs/f6 ]]; then
-    module load BOKEH/${MACHINE}C6
+    module load pyDAmonitor/${MACHINE}C6
   else
     echo "not supported gaea cluster: ${MACHINE}"
   fi
 else
-  module load BOKEH/${MACHINE}
+  module load pyDAmonitor/${MACHINE}
 fi
 module list
 
 ${ushdir}/init.sh
-### nbstripout --install
