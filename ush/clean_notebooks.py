@@ -22,8 +22,14 @@ else:
 for filename in files:
     nb = NotebookCleaner(str(filename))
     nb.clear('output')
+
     for cell in nb.ntbk.cells:
         if 'execution_count' in cell:
             cell['execution_count'] = None
+
+        # Remove UI metadata like jp-MarkdownHeadingCollapsed
+        if 'metadata' in cell and isinstance(cell['metadata'], dict):
+            cell['metadata'].pop('jp-MarkdownHeadingCollapsed', None)
+
     # nb.clear('metadata', preserve=["kernelspec", "language_info"])
     nb.save(str(filename))
