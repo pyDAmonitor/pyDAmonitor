@@ -24,5 +24,6 @@ else
   module load pyDAmonitor/${MACHINE}
 fi
 module list
+export pyDAmonitor_ROOT="$(dirname ${ushdir})"
 
 ${ushdir}/init.sh
