@@ -11,7 +11,7 @@ conflict(pkgName)
 prepend_path("MODULEPATH", '/work/noaa/zrtrr/gge/Miniforge3/modulefiles')
 
 load("Miniforge3/24.11.3-2")
-load("bokeh/3.7.0")
+load("pyDAmonitor/1.0.0")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)

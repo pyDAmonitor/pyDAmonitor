@@ -8,10 +8,10 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/glade/work/geguo/Miniforge3/modulefiles')
+prepend_path("MODULEPATH", '/gpfs/f6/bil-fire10-oar/world-shared/gge/Miniforge3/modulefiles')
 
 load("Miniforge3/24.11.3-2")
-load("bokeh/3.7.0")
+load("pyDAmonitor/1.0.0")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)
