@@ -172,6 +172,9 @@ data/*
 # Track everything inside data/samples/
 !data/samples/**
 !data/cartopy/**
+
+#Ignore everything under docs/notebook_docs/
+docs/notebook_docs/*
 #
 contrib/*.txt
 misc

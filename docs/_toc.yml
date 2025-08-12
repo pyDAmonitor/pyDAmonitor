@@ -1,0 +1,16 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: intro
+parts:
+- caption: preamble
+  chapters:
+  - file: markdown
+  - file: example
+  - file: markdown-notebooks
+
+- caption: demo
+  chapters:
+  - file: notebook_docs/mpas_plotting
+    title: mpas-jedi plotting
