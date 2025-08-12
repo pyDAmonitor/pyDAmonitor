@@ -1,7 +1,7 @@
-from .ioda import ioda
+from .obsSpace import obsSpace
 from .fit_rate import fit_rate
 
 __all__ = [
-    'ioda',
+    'obsSpace',
     'fit_rate',
 ]

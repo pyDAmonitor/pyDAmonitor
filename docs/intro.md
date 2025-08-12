@@ -9,11 +9,7 @@ MarkDown files can be used to add additional documentation.
 # Table of Contents
 
 - [mpas_plotting Notebook](notebook_docs/mpas_plotting)
-- place holder
-- place holder
-- place holder
-- place holder
-- place holder
+- [obs exploring](notebook_docs/obs_exploring)
 - place holder
 - place holder
 - place holder

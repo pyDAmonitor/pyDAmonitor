@@ -1,5 +1,6 @@
 # Table of contents
 # Learn more at https://jupyterbook.org/customize/toc.html
+# ****  Be sure to remove the trailing .ipynb or .md  ****
 
 format: jb-book
 root: intro
@@ -10,7 +11,9 @@ parts:
   - file: example
   - file: markdown-notebooks
 
-- caption: demo
+- caption: DA monitor
   chapters:
   - file: notebook_docs/mpas_plotting
     title: mpas-jedi plotting
+  - file: notebook_docs/obs_exploring
+    title: obs exploring

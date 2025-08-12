@@ -93,7 +93,7 @@ def load_inv_bkg_ana(files):
     return datasets
 
 
-def query_dataset(dataset):
+def query_dataset(dataset, meta_exclude=None):
     if dataset.groups:
         for grp in dataset.groups:
             print(grp)
@@ -107,7 +107,8 @@ def query_dataset(dataset):
                     print(text + text2.rstrip(","))
             else:
                 for var in dataset.groups[grp].variables:
-                    text += f"{var}, "
+                    if meta_exclude is None or meta_exclude not in var:
+                        text += f"{var}, "
                 print(text.rstrip(","))
     else:
         text = ""
@@ -116,12 +117,13 @@ def query_dataset(dataset):
         print(text.rstrip(","))
 
 
-def query_data(data):
+def query_data(data, meta_exclude=None):
     text = ""
     if data.data:
         data = data.data
     for var in data:
-        text += f"{var}, "
+        if meta_exclude is None or meta_exclude not in var:
+            text += f"{var}, "
     print(text.rstrip(","))
 
 

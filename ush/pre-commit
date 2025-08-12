@@ -11,6 +11,9 @@ if [[ "$CONDA_DEFAULT_ENV" != "pyDAmonitor"  ]]; then
   exit 1
 fi
 for notebook in ${STAGED_NOTEBOOKS[@]}; do
-  ush/clean_notebooks.py ${notebook}
+  if [[ -s "${notebook}" ]]; then
+    echo "Automatic clean: ${notebook}" >&2
+    ush/clean_notebooks.py ${notebook}
+  fi
   git add ${notebook}
 done
