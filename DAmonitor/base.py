@@ -127,6 +127,10 @@ def query_data(data, meta_exclude=None):
     print(text.rstrip(","))
 
 
+def query_obj(obj):
+    return [attr for attr in dir(obj) if not callable(getattr(obj, attr)) and not attr.startswith("__")]
+
+
 def to_dataframe(obsDF):
     obsDF = obsDF
     if obsDF.data:
