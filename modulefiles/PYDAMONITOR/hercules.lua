@@ -1,5 +1,5 @@
 help([[
-Load environment for running BOKEH.
+Load environment for running PYDAMONITOR.
 ]])
 
 local pkgName    = myModuleName()
@@ -15,5 +15,5 @@ load("pyDAmonitor/1.0.0")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)
-whatis("Category: BOKEH")
-whatis("Description: Load all libraries needed for BOKEH")
+whatis("Category: PYDAMONITOR")
+whatis("Description: Load all libraries needed for PYDAMONITOR")

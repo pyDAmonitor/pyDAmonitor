@@ -1,5 +1,5 @@
 help([[
-Load environment for running BOKEH.
+Load environment for running PYDAMONITOR
 ]])
 
 local pkgName    = myModuleName()
@@ -8,12 +8,12 @@ local pkgNameVer = myModuleFullName()
 
 conflict(pkgName)
 
-prepend_path("MODULEPATH", '/gpfs/f6/bil-fire10-oar/world-shared/gge/Miniforge3/modulefiles')
+prepend_path("MODULEPATH", '/work/noaa/zrtrr/gge/Miniforge3/modulefiles')
 
 load("Miniforge3/24.11.3-2")
 load("pyDAmonitor/1.0.0")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)
-whatis("Category: BOKEH")
-whatis("Description: Load all libraries needed for BOKEH")
+whatis("Category: PYDAMONITOR")
+whatis("Description: Load all libraries needed for PYDAMONITOR")
