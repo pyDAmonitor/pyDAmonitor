@@ -9,6 +9,6 @@ pyDAmonitor automatically reads JEDI (or GSI) diagnostic files and create a comp
 # Links:
 [pyDAmonitor Book](https://pyDAmonitor.github.io/docs): showcase notebooks plots and results
 
-[work with pyDAmonitor](https://github.com/NOAA-GSL/pyDAmonitor/wiki/work-with-pyDAmonitor)  
+[work with pyDAmonitor](https://github.com/pyDAmonitor/pyDAmonitor/wiki/work-with-pyDAmonitor)  
 
-Check [wiki](https://github.com/NOAA-GSL/pyDAmonitor/wiki) for more information
+Check [wiki](https://github.com/pyDAmonitor/pyDAmonitor/wiki) for more information
