@@ -14,7 +14,7 @@ case ${MACHINE} in
   ursa)
     FIX_RRFS_LOCATION=/scratch4/BMC/rtrr/FIX_pyDAmonitor
     ;;
-  ursa)
+  derecho)
     FIX_RRFS_LOCATION=/glade/work/geguo/FIX_pyDAmonitor
     ;;
   jet)
