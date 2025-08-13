@@ -1,5 +1,5 @@
 help([[
-Load environment for running BOKEH.
+Load environment for running PYDAMONITOR.
 ]])
 
 local pkgName    = myModuleName()
@@ -11,9 +11,9 @@ conflict(pkgName)
 prepend_path("MODULEPATH", '/scratch3/BMC/wrfruc/hera/Miniforge3/modulefiles')
 
 load("Miniforge3/24.11.3-2")
-load("bokeh/3.7.0")
+load("pyDAmonitor/1.0.0")
 
 whatis("Name: ".. pkgName)
 whatis("Version: ".. pkgVersion)
-whatis("Category: BOKEH")
-whatis("Description: Load all libraries needed for BOKEH")
+whatis("Category: PYDAMONITOR")
+whatis("Description: Load all libraries needed for PYDAMONITOR")

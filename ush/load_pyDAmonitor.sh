@@ -14,14 +14,14 @@ module purge
 module use ${ushdir}/../modulefiles
 if [[ "${MACHINE}" == "gaea" ]]; then
   if [[ -d /gpfs/f5 ]]; then
-    module load pyDAmonitor/${MACHINE}C5
+    module load PYDAMONITOR/${MACHINE}C5
   elif [[ -d /gpfs/f6 ]]; then
-    module load pyDAmonitor/${MACHINE}C6
+    module load PYDAMONITOR/${MACHINE}C6
   else
     echo "not supported gaea cluster: ${MACHINE}"
   fi
 else
-  module load pyDAmonitor/${MACHINE}
+  module load PYDAMONITOR/${MACHINE}
 fi
 module list
 export pyDAmonitor_ROOT="$(dirname ${ushdir})"
