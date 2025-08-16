@@ -5,10 +5,10 @@ import holoviews as hv
 import numpy as np
 
 
-def hslice_contour0(ux_hslice, title, cmin=None, cmax=None, cincr=None, width=800, height=500, cmap="coolwarm", zero_shift=0, clevs_multiplier=1):
+def hcross_contour0(ux_hcross, title, cmin=None, cmax=None, cincr=None, width=800, height=500, cmap="coolwarm", zero_shift=0, clevs_multiplier=1):
     # Get min and max
-    amin = ux_hslice.min().item()
-    amax = ux_hslice.max().item()
+    amin = ux_hcross.min().item()
+    amax = ux_hcross.max().item()
     title += f" min={amin:.1f} max={amax:.1f}"
     if cincr is None:
         # estimate an cincr
@@ -45,7 +45,7 @@ def hslice_contour0(ux_hslice, title, cmin=None, cmax=None, cincr=None, width=80
 
     # generate contour plot
     contour_plot = hv.operation.contours(
-        ux_hslice.plot(),
+        ux_hcross.plot(),
         levels=np.arange(cmin, cmax + cincr, cincr),  # np.linspace(cmin, cmax, num=clevs),  # levels=np.arange(cmin, cmax, 1)
         filled=True
     ).opts(

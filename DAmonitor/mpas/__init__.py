@@ -1,9 +1,9 @@
-from .hslice_contour import hslice_contour
-from .hslice_contour0 import hslice_contour0
-from .vslice_contour import vslice_contour
+from .hcross_contour import hcross_contour
+from .hcross_contour0 import hcross_contour0
+from .vcross_contour import vcross_contour
 
 __all__ = [
-    'hslice_contour',
-    'hslice_contour0',
-    'vslice_contour',
+    'hcross_contour',
+    'hcross_contour0',
+    'vcross_contour',
 ]
