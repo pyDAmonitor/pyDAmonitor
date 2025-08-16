@@ -10,11 +10,24 @@ notebooks["obs_exploring.ipynb"]="obs_exploring.ipynb"
 ### users usually do not need to make changes below this line
 ### ========================================================================
 #
-# check whether the current branch has a remote, exit if not
+# save the origin URL before running ghp-import, which has to use the origin remote
+save_origin=$(git remote get-url origin)
+#
+# get the remote url for current branch and set it as book_repo
 remote=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | cut -d'/' -f1)
 if [[ -z "${remote}" ]]; then
   echo "Push current branch to a remote first and then run build_book.sh again"
   exit 1
+fi
+book_repo=$(git remote get-url ${remote})
+#book_repo=git@github.com:pyDAmonitor/docs # use this line to overwrite the automatically-detected book_repo
+
+if [[ "${book_repo}" ==  *"NOAA-GSL/pyDAmonitor" ]] \
+   || [[ "${book_repo}" ==  *"pyDAmonitor/pyDAmonitor" ]]; then
+      echo "ERROR: current branch tracks the authoritative repository:"
+      echo "  ${book_repo}"
+      echo "users can ONLY push books to their own forks"
+      exit 1
 fi
 
 set -x
@@ -32,21 +45,6 @@ jupyter-book clean ${doc_dir}
 jupyter-book build ${doc_dir}
 
 ### push book to book_repo
-# save the origin URL and restore after ghp-import, which has to use the origin remote
-save_origin=$(git remote get-url origin)
-
-# get the remote url for current branch and set it as book_repo
-book_repo=$(git remote get-url ${remote})
-#book_repo= # use this line to overwrite the automatically-detected book_repo
-
-if [[ "${book_repo}" ==  *"NOAA-GSL/pyDAmonitor" ]] \
-   || [[ "${book_repo}" ==  *"pyDAmonitor/pyDAmonitor" ]]; then
-      echo "ERROR: current branch tracks the authoritative repository:"
-      echo "  ${book_repo}"
-      echo "users can ONLY push books to their own forks"
-      exit 1
-fi
-
 # change origin, ghp-import and then restore origin 
 git remote set-url origin ${book_repo}
 ghp-import -n -p -f ${doc_dir}/_build/html
