@@ -9,6 +9,14 @@ notebooks["obs_exploring.ipynb"]="obs_exploring.ipynb"
 
 ### users usually do not need to make changes below this line
 ### ========================================================================
+#
+# check whether the current branch has a remote, exit if not
+remote=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null | cut -d'/' -f1)
+if [[ -z "${remote}" ]]; then
+  echo "Push current branch to a remote first and then run build_book.sh again"
+  exit 1
+fi
+
 set -x
 ### always start from a clean notebook_docs/ directory
 rm -rf ${doc_dir}/notebook_docs
@@ -28,7 +36,6 @@ jupyter-book build ${doc_dir}
 save_origin=$(git remote get-url origin)
 
 # get the remote url for current branch and set it as book_repo
-remote=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -d'/' -f1)
 book_repo=$(git remote get-url ${remote})
 #book_repo= # use this line to overwrite the automatically-detected book_repo
 
