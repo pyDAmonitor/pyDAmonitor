@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import xarray as xr
 
 
 def vcross_contour(uxvar, lon=None, lat=None, cmin=None, cmax=None, width=600, height=530, clevels=20, steps=100, xtick_stride=5):
