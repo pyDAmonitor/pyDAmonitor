@@ -22,23 +22,23 @@ def vcross_contour(uxvar, lon=None, lat=None, cmin=None, cmax=None, width=600, h
     levels = np.linspace(cmin, cmax, num=clevels)
     if lon is not None:  # along constant lon
         title = f"constant_lon={lon} min={amin:.1f} max={amax:.1f}"
-        str_lat_lon="lat"
+        str_lat_lon = "lat"
         xtick_labels = [f"{abs(value):.1f}°{'N' if value >= 0 else 'S'}" for value in vcross[str_lat_lon]]
 
     elif lat is not None:  # along constant lat
         title = f"constant_lat={lat} min={amin:.1f} max={amax:.1f}"
-        str_lat_lon="lon"
+        str_lat_lon = "lon"
         xtick_labels = [f"{abs(value):.1f}°{'E' if value >= 0 else 'W'}" for value in vcross[str_lat_lon]]
 
     vcross = vcross.assign_coords({
         "steps": vcross[str_lat_lon].values,
         'nVertLevels': range(vcross['nVertLevels'].shape[0])}
     )
-    
+
     return vcross.hvplot.contourf(
-            x='steps',y='nVertLevels', 
-            cmap='coolwarm',levels=levels,
-            width=width, height=height,title=title,
+        x='steps', y='nVertLevels',
+        cmap='coolwarm', levels=levels,
+        width=width, height=height, title=title,
     ).opts(
         xlabel=str_lat_lon,
         xticks=list(zip(vcross[str_lat_lon].values[::xtick_stride], xtick_labels[::xtick_stride]))

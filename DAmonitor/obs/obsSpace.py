@@ -1,4 +1,4 @@
-from netCDF4 import Dataset
+from netCDF4 import Dataset, chartostring
 import numpy as np
 
 
@@ -56,6 +56,7 @@ class obsSpace:
             metadata[var] = dataset.groups['MetaData'].variables[var][:]
         self.metadata = metadata
 
+    # convert groups[].variables[] to a data dictionary
     def _get_data_by_varname(self, varname):
         dataset = self.dataset
         # This will get both metadata and regular data
@@ -116,3 +117,52 @@ class obsSpace:
             return self.__getitem__(name)
         except KeyError:
             raise AttributeError(f"'obsSpace' object has no attribute or variable '{name}'")
+
+
+class obsSpaceGSI:
+    def __init__(self, filepath):
+        """
+        Initialize an obsSpace object and load the NetCDF file.
+
+        Parameters:
+        - filepath (str): Path to the NetCDF file.
+        - var (str): variable name, such as t, q, uv
+        """
+        self.filepath = filepath
+        self.dataset = Dataset(filepath, mode='r')
+
+        # convert netCDF4 Variable objects to a data dictionary
+        self._get_data()
+
+    def get_valid_subset(data, item, condition={"EffectiveQC2": 0}):
+        data2 = np.array(data[item])
+        key, value = next(iter(condition.items()))
+        return data2[data[key] == value]
+
+    def _get_data(self):
+        dataset = self.dataset
+        # This will get both metadata and regular data
+        data = {}
+        for var in dataset.variables:
+            if var == "Station_ID" or var == "Observation_Class":
+                data[var] = chartostring(dataset.variables[var][:])
+            elif var == "Bias_Correction_Terms":
+                data["Bias_Correction_1"] = dataset.variables[var][:, 0]
+                data["Bias_Correction_2"] = dataset.variables[var][:, 1]
+                data["Bias_Correction_3"] = dataset.variables[var][:, 2]
+            else:
+                data[var] = dataset.variables[var][:]
+
+        self.data = _ObsDF(data)
+
+    def __getitem__(self, key):
+        # Enable obsSpace["t"]
+        if key in ["data"]:
+            return self.data
+
+    def __getattr__(self, name):
+        # Enable obsSpace.t
+        try:
+            return self.__getitem__(name)
+        except KeyError:
+            raise AttributeError(f"'obsSpaceGSI' object has no attribute or variable '{name}'")

@@ -128,11 +128,11 @@ def query_data(data, meta_exclude=None):
 
 
 def query_obj(obj):
-    return [attr for attr in dir(obj) if not callable(getattr(obj, attr)) and not attr.startswith("__")]
+    return [attr for attr in dir(obj) if not callable(getattr(obj, attr)) and not attr.startswith("_")]
 
 
 def to_dataframe(obsDF):
     obsDF = obsDF
-    if obsDF.data:
+    if hasattr(obsDF, "data"):
         obsDF = obsDF.data
     return pd.DataFrame(obsDF)
