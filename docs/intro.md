@@ -10,6 +10,7 @@ MarkDown files can be used to add additional documentation.
 
 - [mpas_plotting Notebook](notebook_docs/mpas_plotting)
 - [obs exploring](notebook_docs/obs_exploring)
+- [work with GSI](notebook_docs/gsi)
 - place holder
 - place holder
 - place holder
