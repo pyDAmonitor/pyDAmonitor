@@ -5,6 +5,7 @@ doc_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 declare -A notebooks
 notebooks["mpas_plotting.ipynb"]="mpas_plotting.ipynb"
 notebooks["obs_exploring.ipynb"]="obs_exploring.ipynb"
+notebooks["gsi.ipynb"]="gsi.ipynb"
 
 
 ### users usually do not need to make changes below this line

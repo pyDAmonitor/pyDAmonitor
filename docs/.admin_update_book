@@ -1,0 +1,20 @@
+#!/bin/bash
+doc_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+echo "This script is used by admin to update the official book at pyDAmonitor.github.io/docs"
+echo "Do you want to continue(y/n)?"
+read YN
+if [[ "${YN}" != "y" ]]; then
+  exit 1
+fi
+
+### save the origin URL before running ghp-import, which has to use the origin remote
+save_origin=$(git remote get-url origin)
+
+book_repo="git@github.com:pyDAmonitor/docs"
+### push book to book_repo
+# change origin, ghp-import and then restore origin 
+set -x
+git remote set-url origin ${book_repo}
+ghp-import -n -p -f ${doc_dir}/_build/html
+git remote set-url origin ${save_origin}

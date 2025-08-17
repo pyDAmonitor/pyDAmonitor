@@ -17,3 +17,5 @@ parts:
     title: mpas-jedi plotting
   - file: notebook_docs/obs_exploring
     title: obs exploring
+  - file: notebook_docs/gsi
+    title: work with GSI
