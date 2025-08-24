@@ -25,10 +25,10 @@ hgt_or_prs = 'prs'  # use height (hgt) or pressure (prs) for vertical subset and
 # maindir='/lfs6/BMC/wrfruc/MPAS_dev4/com/rrfs/v2.0.9'
 # ncfile = f'./jdiag_aircar_t133.nc'
 # jfile = f'{maindir}/rrfs.{expdate}/{exphh}/jedivar/det/{ncfile}'
-jfile = '../data/samples/mpasjedi/jdiag_aircar_t133.nc'
+jfile = '../data/mpasjedi/jdiag_aircar_t133.nc'
 
-gfile_anl = '../data/samples/gsi/diag_conv_q_anl.2024050601.nc4'
-gfile_ges = '../data/samples/gsi/diag_conv_q_ges.2024050601.nc4'
+gfile_anl = '../data/gsi/diag_conv_q_anl.2024050601.nc4'
+gfile_ges = '../data/gsi/diag_conv_q_ges.2024050601.nc4'
 
 VARIABLE = 'airTemperature'
 # VARIABLE='q'

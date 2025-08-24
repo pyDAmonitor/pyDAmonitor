@@ -37,9 +37,9 @@ def mpas_plot(ux1D, maps, title, minval=None, maxval=None):
 
 # ~~~~~~~ beginning
 #
-grid_file = "../data/samples/mpasjedi/invariant.nc"
-bkg_file = "../data/samples/mpasjedi/bkg.nc"
-ana_file = "../data/samples/mpasjedi/ana.nc"
+grid_file = "../data/mpasjedi/invariant.nc"
+bkg_file = "../data/mpasjedi/bkg.nc"
+ana_file = "../data/mpasjedi/ana.nc"
 
 uxds_a = ux.open_dataset(grid_file, ana_file)
 uxds_b = ux.open_dataset(grid_file, bkg_file)

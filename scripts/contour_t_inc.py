@@ -17,9 +17,9 @@ def get_run_directory():
 sys.path.append(os.path.join(get_run_directory(), "../funcs"))
 
 files = {
-    "inv": "../data/samples/mpasjedi/invariant.nc",
-    "bkg": "../data/samples/mpasjedi/bkg.nc",
-    "ana": "../data/samples/mpasjedi/ana.nc",
+    "inv": "../data/mpasjedi/invariant.nc",
+    "bkg": "../data/mpasjedi/bkg.nc",
+    "ana": "../data/mpasjedi/ana.nc",
 }
 datasets = load_inv_bkg_ana(files)
 

@@ -29,17 +29,17 @@ figdir = "./"
 if var == "T" or var == "u" or var == "v":
     # anal = f"{maindir}/{analdir}/fv3_dynvars"
     # bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_dynvars"
-    anal = "../data/samples/fv3/fv3_dynvars.ana"
-    bkg = "../data/samples/fv3/fv3_dynvars.bkg"
+    anal = "../data/fv3/fv3_dynvars.ana"
+    bkg = "../data/fv3/fv3_dynvars.bkg"
 if var == "sphum":
     # anal = f"{maindir}/{analdir}/fv3_tracer"
     # bkg = f"{maindir}/anal_conv_gsi.fresh/fv3_tracer"
-    anal = "../data/samples/fv3/fv3_tracer.ana"
-    bkg = "../data/samples/fv3/fv3_tracer.bkg"
+    anal = "../data/fv3/fv3_tracer.ana"
+    bkg = "../data/fv3/fv3_tracer.bkg"
 # static = f"{maindir}/anal_conv_gsi.fresh/fv3_grid_spec"
-static = "../data/samples/fv3/fv3_grid_spec"
+static = "../data/fv3/fv3_grid_spec"
 # nc_delp = f"{maindir}/{analdir}/fv3_dynvars"
-nc_delp = "../data/samples/fv3/fv3_dynvars.ana"
+nc_delp = "../data/fv3/fv3_dynvars.ana"
 
 if var == "T":
     unit = "K"

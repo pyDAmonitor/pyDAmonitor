@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import warnings
+import os
 from netCDF4 import Dataset
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,6 +9,7 @@ import colormap
 import matplotlib
 matplotlib.use('agg')
 warnings.filterwarnings('ignore')
+pyDAmonitor_ROOT=os.getenv("pyDAmonitor_ROOT")
 
 
 def plot_inc(var_inc, decimal=3):
@@ -61,9 +63,9 @@ def main():
     # jbackgrnd = "/scratch1/BMC/wrfruc/jjhu/rundir/wrkflow-test/Btuning/2024050601_tuneB/bkg/mpasout.2024-05-06_01.00.00.nc"
     # jstatic = "/scratch1/BMC/wrfruc/jjhu/rundir/wrkflow-test/Btuning/2024050601_tuneB/invariant.nc"
 
-    janalysis = "../data/samples/mpasjedi/ana.nc"
-    jbackgrnd = "../data/samples/mpasjedi/bkg.nc"
-    jstatic = "../data/samples/mpasjedi/invariant.nc"
+    janalysis = f"{pyDAmonitor_ROOT}/data/mpasjedi/ana.nc"
+    jbackgrnd = f"{pyDAmonitor_ROOT}/data/mpasjedi/bkg.nc"
+    jstatic = f"{pyDAmonitor_ROOT}/data/mpasjedi/invariant.nc"
 
     figdir = "./"
 
