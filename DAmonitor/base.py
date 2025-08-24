@@ -136,3 +136,9 @@ def to_dataframe(obsDF):
     if hasattr(obsDF, "data"):
         obsDF = obsDF.data
     return pd.DataFrame(obsDF)
+
+
+def load_figs(*paths):
+    from IPython.display import Image, display
+    imgs = [Image(path) for path in paths]
+    display(*imgs)
