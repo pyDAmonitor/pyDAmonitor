@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 doc_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-#### add new notebooks to the notebooks array
-declare -A notebooks
-notebooks["mpas_plotting.ipynb"]="mpas_plotting.ipynb"
-notebooks["obs_exploring.ipynb"]="obs_exploring.ipynb"
-notebooks["gsi.ipynb"]="gsi.ipynb"
-notebooks["matplotlib-pyplot-demo.ipynb"]="matplotlib-pyplot-demo.ipynb"
-notebooks["mpas_domain_shape_terrain.ipynb"]="mpas_domain_shape_terrain.ipynb"
-notebooks["script-mpas-increments.ipynb"]="script-mpas-increments.ipynb"
-
-
 ### users usually do not need to make changes below this line
 ### ========================================================================
 #
@@ -35,15 +25,6 @@ if [[ "${book_repo}" ==  *"NOAA-GSL/pyDAmonitor" ]] \
 fi
 
 set -x
-### always start from a clean notebook_docs/ directory
-rm -rf ${doc_dir}/notebook_docs
-mkdir -p ${doc_dir}/notebook_docs
-
-### link notebooks from pyDAmonitor/notebooks/  to pyDAmonitor/docs/notebook_docs
-for nb in "${notebooks[@]}"; do
-  ln -snf ${doc_dir}/../notebooks/${nb} ${doc_dir}/notebook_docs/
-done
-
 ### clean the book first and then build
 jupyter-book clean ${doc_dir}
 jupyter-book build ${doc_dir}

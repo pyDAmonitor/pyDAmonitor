@@ -15,12 +15,12 @@ Jupyter Notebooks are rendered in an on-prem RDHPCS and then sent to Github for 
 
 # Table of Contents
 
-- [plot MPAS domain and terrain](notebook_docs/mpas_domain_shape_terrain)
-- [mpas_plotting Notebook](notebook_docs/mpas_plotting)
-- [obs exploring](notebook_docs/obs_exploring)
-- [work with GSI](notebook_docs/gsi)
-- [plot MPAS analysis increment profile](notebook_docs/script-mpas-increments.ipynb)
-- [matplotlib pyplot demo](notebook_docs/matplotlib-pyplot-demo.ipynb)
+- [plot MPAS domain and terrain](notebooks/mpas_domain_shape_terrain)
+- [mpas_plotting Notebook](notebooks/mpas_plotting)
+- [obs exploring](notebooks/obs_exploring)
+- [work with GSI](notebooks/gsi)
+- [plot MPAS analysis increment profile](notebooks/script-mpas-increments.ipynb)
+- [matplotlib pyplot demo](notebooks/matplotlib-pyplot-demo.ipynb)
 
 # Contributors
 Guoqing Ge, Junjun Hu, Aiden Pape, Ethan Wiese, Haidao Lin, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig

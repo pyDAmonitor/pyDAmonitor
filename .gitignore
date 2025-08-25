@@ -168,8 +168,6 @@ cython_debug/
 data/.agent
 data/INIT_DONE
 
-#Ignore everything under docs/notebook_docs/
-docs/notebook_docs/*
 #
 contrib/*.txt
 misc
