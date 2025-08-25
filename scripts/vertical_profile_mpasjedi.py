@@ -9,7 +9,7 @@ import colormap
 import matplotlib
 matplotlib.use('agg')
 warnings.filterwarnings('ignore')
-pyDAmonitor_ROOT=os.getenv("pyDAmonitor_ROOT")
+pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
 
 
 def plot_inc(var_inc, decimal=3):
