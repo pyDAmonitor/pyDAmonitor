@@ -49,9 +49,9 @@ def main():
     # jbackgrnd = "/scratch1/BMC/wrfruc/jjhu/rundir/wrkflow-test/Btuning/2024050601_tuneB/bkg/mpasout.2024-05-06_01.00.00.nc"
     # jstatic = "/scratch1/BMC/wrfruc/jjhu/rundir/wrkflow-test/Btuning/2024050601_tuneB/invariant.nc"
 
-    janalysis = "../data/samples/mpasjedi/ana.nc"
-    jbackgrnd = "../data/samples/mpasjedi/bkg.nc"
-    jstatic = "../data/samples/mpasjedi/invariant.nc"
+    janalysis = "../data/mpasjedi/ana.nc"
+    jbackgrnd = "../data/mpasjedi/bkg.nc"
+    jstatic = "../data/mpasjedi/invariant.nc"
 
     figdir = "./"
 

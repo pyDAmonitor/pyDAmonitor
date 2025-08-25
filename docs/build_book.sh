@@ -6,6 +6,9 @@ declare -A notebooks
 notebooks["mpas_plotting.ipynb"]="mpas_plotting.ipynb"
 notebooks["obs_exploring.ipynb"]="obs_exploring.ipynb"
 notebooks["gsi.ipynb"]="gsi.ipynb"
+notebooks["matplotlib-pyplot-demo.ipynb"]="matplotlib-pyplot-demo.ipynb"
+notebooks["mpas_domain_shape_terrain.ipynb"]="mpas_domain_shape_terrain.ipynb"
+notebooks["script-mpas-increments.ipynb"]="script-mpas-increments.ipynb"
 
 
 ### users usually do not need to make changes below this line

@@ -1,1 +1,0 @@
-../../.agent/mpasjedi/bkg.nc

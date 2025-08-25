@@ -1,1 +1,0 @@
-../../.agent/mpasjedi/jdiag_cris-fsr_n20.nc
