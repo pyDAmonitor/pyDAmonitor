@@ -13,9 +13,15 @@ parts:
 
 - caption: DA monitor
   chapters:
+  - file: notebook_docs/mpas_domain_shape_terrain.ipynb
+    title: "mpas domain shape and terrain"
   - file: notebook_docs/mpas_plotting
     title: mpas-jedi plotting
   - file: notebook_docs/obs_exploring
     title: obs exploring
   - file: notebook_docs/gsi
     title: work with GSI
+  - file: notebook_docs/script-mpas-increments.ipynb
+    title: script-MPAS analysis increment profile
+  - file: notebook_docs/matplotlib-pyplot-demo.ipynb
+    title: matplotlib-pyplot-demo
