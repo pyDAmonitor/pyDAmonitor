@@ -23,4 +23,4 @@ Jupyter Notebooks are rendered in an on-prem RDHPCS and then sent to Github for 
 - [matplotlib pyplot demo](notebook_docs/matplotlib-pyplot-demo.ipynb)
 
 # Contributors
-Guoqing Ge, Junjun Hu, Aidan Pape, Ethan Wiese, Haidao Lin, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig
+Guoqing Ge, Junjun Hu, Aiden Pape, Ethan Wiese, Haidao Lin, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig
