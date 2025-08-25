@@ -20,6 +20,7 @@ Jupyter Notebooks are rendered in an on-prem RDHPCS and then sent to Github for 
 - [obs exploring](notebook_docs/obs_exploring)
 - [work with GSI](notebook_docs/gsi)
 - [plot MPAS analysis increment profile](notebook_docs/script-mpas-increments.ipynb)
-- [matplotlib pylot demo](notebook_docs/matplotlib-pyplot-demo.ipynb)
-- place holder
-- place holder
+- [matplotlib pyplot demo](notebook_docs/matplotlib-pyplot-demo.ipynb)
+
+# Contributors
+Guoqing Ge, Junjun Hu, Aidan Pape, Ethan Wiese, Haidao Lin, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig
