@@ -1,3 +1,5 @@
+[pyDAmonitor Book](https://pyDAmonitor.github.io/docs): showcase plots and results
+
 # pyDAmonitor
 Safeguarding invaluable DA investments by vigilantly monitoring DA performance both in real-time and retrospective scenarios.
 
@@ -7,7 +9,7 @@ Data assimilation (DA) is a critical component of modern weather forecasting and
 pyDAmonitor automatically reads JEDI (or GSI) diagnostic files and create a comprehensive set of statistics, plots, and maps of key assimilation metrics like OmB (Observation minus Background) and OmA (Observation minus Analysis), innovation distribution, etc. It aims to facilitate and speed up analysis of DA performance in both real-time and retrospective scenarios.
 
 # Links:
-[pyDAmonitor Book](https://pyDAmonitor.github.io/docs): showcase notebooks plots and results
+[pyDAmonitor Book](https://pyDAmonitor.github.io/docs): showcase plots and results
 
 [work with pyDAmonitor](https://github.com/pyDAmonitor/pyDAmonitor/wiki/work-with-pyDAmonitor)  
 
