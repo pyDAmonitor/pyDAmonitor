@@ -142,3 +142,46 @@ def load_figs(*paths):
     from IPython.display import Image, display
     imgs = [Image(path) for path in paths]
     display(*imgs)
+
+
+def aircraft_reject_list_to_df(filepath):
+    dcReject = {}
+    with open(filepath, 'r') as myfile:
+        for line in myfile:
+            if line.strip() and not line.strip().startswith(";"):
+                fields = line.split()
+                if len(fields) >= 17:
+                    tailID = fields[0]  # ID?
+                    if tailID in dcReject:
+                        print(f"duplicate entry: {tailID}")
+                    #
+                    size = len(fields)
+                    fail_reason = ""
+                    for pos in range(17, size):
+                        fail_reason = fail_reason + fields[pos]
+
+                    dcAircraft = {
+                        "tailID": fields[0],
+                        "flagT": fields[1],
+                        "flagW": fields[2],
+                        "flagR": fields[3],
+                        "FSL": fields[4],
+                        "MDCRS": fields[5],
+                        "N": fields[6],
+                        "bs_T": fields[7],  # bs=bias
+                        "std_T": fields[8],
+                        "bs_S": fields[9],  # wind speed ?
+                        "std_S": fields[10],
+                        "bs_D": fields[11],  # wind direction?
+                        "std_D": fields[12],
+                        "bs_W": fields[13],
+                        "std_W": fields[14],
+                        "bs_RH": fields[15],
+                        "std_RH": fields[16],
+                        "fail_reason": fail_reason,
+                    }
+                    #
+                    dcReject[tailID] = dcAircraft
+                else:
+                    print(f"warning: less than 17 columns\n{line}")
+    return pd.DataFrame(dcReject).T.reset_index(drop=True)  # transpose and then drop customized row names
