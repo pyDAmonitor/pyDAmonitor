@@ -13,7 +13,9 @@ parts:
 
 - caption: DA monitor
   chapters:
-  - file: notebooks/mpas_domain_shape_terrain.ipynb
+  - file: notebooks/cells
+    title: "find and plot individual cells"
+  - file: notebooks/mpas_domain_shape_terrain
     title: "mpas domain shape and terrain"
   - file: notebooks/mpas_plotting
     title: mpas-jedi plotting
@@ -21,7 +23,11 @@ parts:
     title: obs exploring
   - file: notebooks/gsi
     title: work with GSI
-  - file: notebooks/script-mpas-increments.ipynb
+  - file: notebooks/script-mpas-increments
     title: script-MPAS analysis increment profile
-  - file: notebooks/matplotlib-pyplot-demo.ipynb
+  - file: notebooks/sat-qcfilters
+    title: work with satellite observations and filters
+  - file: notebooks/matplotlib-pyplot-demo
     title: matplotlib-pyplot-demo
+  - file: notebooks/plotly-demo
+    title: plotly-demo
