@@ -104,17 +104,18 @@ def query_dataset(dataset, meta_exclude=None):
                     text2 = "    "
                     for var in dataset.groups[grp].groups[nestgrp].variables:
                         text2 += f"{var}, "
-                    print(text + text2.rstrip(","))
+                    print(text + text2.rstrip(", "))
             else:
                 for var in dataset.groups[grp].variables:
                     if meta_exclude is None or meta_exclude not in var:
                         text += f"{var}, "
-                print(text.rstrip(","))
-    else:
+                print(text.rstrip(", "))
+
+    if dataset.variables:
         text = ""
         for var in dataset.variables:
             text += f"{var}, "
-        print(text.rstrip(","))
+        print(text.rstrip(", "))
 
 
 def query_data(data, meta_exclude=None):
@@ -124,7 +125,7 @@ def query_data(data, meta_exclude=None):
     for var in data:
         if meta_exclude is None or meta_exclude not in var:
             text += f"{var}, "
-    print(text.rstrip(","))
+    print(text.rstrip(", "))
 
 
 def query_obj(obj):
