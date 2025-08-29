@@ -25,16 +25,17 @@ class obsSpace:
         - filepath (str): Path to the NetCDF file.
         """
         self.filepath = filepath
-        self.dataset = Dataset(filepath, mode='r')
+        self.ds = Dataset(filepath, mode='r')
 
         # Read the dimension
-        self.nlocs = len(self.dataset.dimensions['Location'])
-
-        # Read the Location variable
-        self.locations = self.dataset.variables['Location'][:]
+        self.nlocs = len(self.ds.dimensions['Location'])
+        self.locations = self.ds.variables['Location'][:]
+        if "Channel" in self.ds.dimensions:
+            self.nchannels = self.ds.dimensions['Channel'].size
+            self.channels = self.ds.variables['Channel'][:]
 
         # Discover group names
-        self.groups = list(self.dataset.groups.keys())
+        self.groups = list(self.ds.groups.keys())
 
         #
         self._get_metadata()
@@ -50,38 +51,41 @@ class obsSpace:
 
     def _get_metadata(self):
         # this is used for get metadata only
-        dataset = self.dataset
+        ds = self.ds
         metadata = {}
-        for var in dataset.groups['MetaData'].variables:
-            metadata[var] = dataset.groups['MetaData'].variables[var][:]
+        for var in ds.groups['MetaData'].variables:
+            metadata[var] = ds.groups['MetaData'].variables[var][:]
         self.metadata = metadata
 
     # convert groups[].variables[] to a data dictionary
     def _get_data_by_varname(self, varname):
-        dataset = self.dataset
+        ds = self.ds
         # This will get both metadata and regular data
         data = {}
         only_has_metadata = True
-        for grp in dataset.groups:
-            if dataset.groups[grp].groups:
-                for nestgrp in dataset.groups[grp].groups:  # DiagnosticFlags
-                    if varname in dataset.groups[grp].groups[nestgrp].variables:
-                        data[nestgrp] = dataset.groups[grp].groups[nestgrp].variables[varname][:]
+        for grp in ds.groups:
+            if ds.groups[grp].groups:
+                for nestgrp in ds.groups[grp].groups:  # DiagnosticFlags
+                    if varname in ds.groups[grp].groups[nestgrp].variables:
+                        data[nestgrp] = ds.groups[grp].groups[nestgrp].variables[varname][:]
                         only_has_metadata = False
             else:
                 if grp == "MetaData":
-                    for var in dataset.groups['MetaData'].variables:
+                    for var in ds.groups['MetaData'].variables:
                         if var != "longitude_latitude_pressure":
-                            data[var] = dataset.groups['MetaData'].variables[var][:]
+                            data[var] = ds.groups['MetaData'].variables[var][:]
                 elif grp == "ObsError" and varname == "specificHumidity":
-                    data["ObsError"] = dataset.groups["ObsError"].variables["relativeHumidity"][:]
+                    data["ObsError"] = ds.groups["ObsError"].variables["relativeHumidity"][:]
                     only_has_metadata = False
-                elif varname == "brightnessTemperature" and (grp == "ObsValue" or grp == "ObsValueAdj") and "brightnessTemperature" in dataset.groups[grp].variables:
-                    data[grp] = dataset.groups[grp].variables["radiance"][:]
+                elif varname == "brightnessTemperature" and (grp == "ObsValue" or grp == "ObsValueAdj") and "brightnessTemperature" in ds.groups[grp].variables:
+                    data[grp] = ds.groups[grp].variables["radiance"][:]
                     only_has_metadata = False
-                elif varname in dataset.groups[grp].variables:
-                    data[grp] = dataset.groups[grp].variables[varname][:]
+                elif varname in ds.groups[grp].variables:
+                    data[grp] = ds.groups[grp].variables[varname][:]
                     only_has_metadata = False
+
+        for var in ds.variables:
+            data[var] = ds.variables[var][:]
 
         # assign the data dict
         if only_has_metadata:
@@ -109,6 +113,7 @@ class obsSpace:
             return self.q
         elif key in ["bt", "brightnessTemperature"]:
             return self.bt
+
         raise KeyError(f"Key '{key}' not found.")
 
     def __getattr__(self, name):
@@ -129,7 +134,7 @@ class obsSpaceGSI:
         - var (str): variable name, such as t, q, uv
         """
         self.filepath = filepath
-        self.dataset = Dataset(filepath, mode='r')
+        self.ds = Dataset(filepath, mode='r')
 
         # convert netCDF4 Variable objects to a data dictionary
         self._get_data()
@@ -140,18 +145,18 @@ class obsSpaceGSI:
         return data2[data[key] == value]
 
     def _get_data(self):
-        dataset = self.dataset
+        ds = self.ds
         # This will get both metadata and regular data
         data = {}
-        for var in dataset.variables:
+        for var in ds.variables:
             if var == "Station_ID" or var == "Observation_Class":
-                data[var] = chartostring(dataset.variables[var][:])
+                data[var] = chartostring(ds.variables[var][:])
             elif var == "Bias_Correction_Terms":
-                data["Bias_Correction_1"] = dataset.variables[var][:, 0]
-                data["Bias_Correction_2"] = dataset.variables[var][:, 1]
-                data["Bias_Correction_3"] = dataset.variables[var][:, 2]
+                data["Bias_Correction_1"] = ds.variables[var][:, 0]
+                data["Bias_Correction_2"] = ds.variables[var][:, 1]
+                data["Bias_Correction_3"] = ds.variables[var][:, 2]
             else:
-                data[var] = dataset.variables[var][:]
+                data[var] = ds.variables[var][:]
 
         self.data = _ObsDF(data)
 
