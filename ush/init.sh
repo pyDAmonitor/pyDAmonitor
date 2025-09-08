@@ -9,7 +9,7 @@ case ${MACHINE} in
     FIX_RRFS_LOCATION=/lfs/h2/emc/lam/noscrub/emc.lam/FIX_pyDAmonitor
     ;;
   hera)
-    FIX_RRFS_LOCATION=/scratch2/BMC/rtrr/FIX_pyDAmonitor
+    FIX_RRFS_LOCATION=/scratch4/BMC/rtrr/FIX_pyDAmonitor
     ;;
   ursa)
     FIX_RRFS_LOCATION=/scratch4/BMC/rtrr/FIX_pyDAmonitor
