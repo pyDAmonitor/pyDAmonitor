@@ -3,6 +3,15 @@
 # pyDAmonitor
 Safeguarding invaluable DA investments by vigilantly monitoring DA performance both in real-time and retrospective scenarios.
 
+# Installation
+```
+git clone https://github.com/pyDAmonitor/pyDAmonitor.git
+conda env create -f pyDAmonitor/environment.yaml
+conda activate pyDAmonitor
+```
+Note: The `pyDAmonitor` Python environment is already installed on `Jet/Hera/Ursa/Gaea/Orion/Hercules/Derecho` and can be loaded with `source pyDAmonitor/ush/load_pyDAmonitor.sh`.  
+Sample data is also staged on these machines for a quick start. If you need the sample data on other platforms, feel free to reach out.
+
 # Details
 Data assimilation (DA) is a critical component of modern weather forecasting and earth system modeling, it enables the integration of atmospheric observations into models to increase forecast accuracy. 
 
