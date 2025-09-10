@@ -1,0 +1,35 @@
+[project]
+name = "pyDAmonitor"
+version = "0.1.1"
+description = "Safeguard invaluable DA investments by vigilantly monitoring DA performance"
+readme = "README.md"
+authors = [
+    { name="Guoqing Ge"},
+    { name="Junjun Hu" },
+    { name="Aiden Pape" },
+    { name="Ethan Wiese" },
+    { name="Haidao Lin" },
+    { name="Sijie Pan" },
+    { name="Chunhua Zhou" },
+    { name="Liaofan Lin" },
+    { name="Terra Ladwig" }
+]
+maintainers = [
+    { name="Guoqing Ge", email="Guoqing.Ge@noaa.gov" }
+]
+
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["DAmonitor"]
+
+[project.urls]
+Homepage = "https://pydamonitor.github.io/docs/intro.html"
+Source = "https://github.com/pyDAmonitor/pyDAmonitor"
+Wiki = "https://github.com/pyDAmonitor/pyDAmonitor/wiki"
+Tracker = "https://github.com/pyDAmonitor/pyDAmonitor/issues"
