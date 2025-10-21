@@ -31,3 +31,5 @@ parts:
     title: matplotlib-pyplot-demo
   - file: notebooks/plotly-demo
     title: plotly-demo
+  - file: notebooks/mpas_rotated_lonlat
+    title: obtain rotated lon/lat from MPAS grid
