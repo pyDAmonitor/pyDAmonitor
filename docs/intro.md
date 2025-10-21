@@ -7,7 +7,7 @@ The pyDAmonitor repository:  https://github.com/pyDAmonitor/pyDAmonitor
 The pyDAmonitor book (or docs): https://pydamonitor.github.io/docs
 
 It is suggested to check the following wiki:
-- [Use Jupyter Lab/Notebook over SSH on Hear/Ursa/Jet/Gaea](https://github.com/pyDAmonitor/pyDAmonitor/wiki/Use-Jupyter-Lab-over-SSH-on-Hera,-Jet,-Gaea)
+- [Use Jupyter Lab/Notebook over SSH on Hear/Ursa/Jet/Gaea](https://github.com/pyDAmonitor/pyDAmonitor/wiki/Use-Jupyter-Lab-over-SSH-on-Ursa,-Hera,-Jet,-Gaea)
 - [work with pyDAmonitor](https://github.com/pyDAmonitor/pyDAmonitor/wiki/work-with-pyDAmonitor)
 - [Python code norm](https://github.com/pyDAmonitor/pyDAmonitor/wiki/pyDAmonitor-Code-Norms)
 
