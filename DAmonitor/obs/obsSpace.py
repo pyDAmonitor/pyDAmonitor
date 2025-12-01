@@ -41,7 +41,7 @@ class obsSpace:
         self._get_metadata()
 
         # Remove groups, provide direct access to varaibles, such as obsSpace.t, obsSpace.q, obsSpace.u, obsSpace.v, etc
-        for var in ["airTemperature", "windEastward", "windNorthward", "specificHumidity", "brightnessTemperature"]:
+        for var in ["airTemperature", "windEastward", "windNorthward", "specificHumidity", "brightnessTemperature", "stationPressure"]:
             self._get_data_by_varname(var)
 
     def get_valid_subset(data, item, condition={"EffectiveQC2": 0}):
@@ -100,6 +100,8 @@ class obsSpace:
             self.q = _ObsDF(data)
         elif varname == "brightnessTemperature":
             self.bt = _ObsDF(data)
+        elif varname == "stationPressure":
+            self.ps = _ObsDF(data)
 
     def __getitem__(self, key):
         # Enable obsSpace["t"]
@@ -113,6 +115,8 @@ class obsSpace:
             return self.q
         elif key in ["bt", "brightnessTemperature"]:
             return self.bt
+        elif key in ["ps", "stationPressure"]:
+            return self.ps
 
         raise KeyError(f"Key '{key}' not found.")
 
