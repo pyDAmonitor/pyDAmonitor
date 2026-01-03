@@ -31,10 +31,14 @@ dependencies:
   - sphinx
   - sphinx-book-theme
   - shellcheck
-  # - uxarray  # for now until releasing vertical cross-sections
+  - uxarray
   - xarray
   - yamlfmt
   - yamllint
+  - cfgrib
+  - pygrib
+  - grib2io
   - pip:
-    - git+https://github.com/UXARRAY/uxarray@interpolate-cross-section  # remove when you revert uxarray above!
     - pyDAmonitor
+    - yamltools4jedi
+    # - git+https://github.com/UXARRAY/uxarray@interpolate-cross-section  # remove when you revert uxarray above!
