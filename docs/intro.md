@@ -27,4 +27,4 @@ Jupyter Notebooks are rendered in an on-prem RDHPCS and then sent to Github for 
 - [rotate lon/lat from MPAS](notebooks/mpas_rotated_lonlat.ipynb)
 
 # Contributors
-Guoqing Ge, Junjun Hu, Aiden Pape, Ethan Wiese, Haidao Lin, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig
+Guoqing Ge, Junjun Hu, Eric James, Haidao Lin, Aiden Pape, Ethan Wiese, Sijie Pan, Chunhua Zhou, Liaofan Lin, Terra Ladwig
