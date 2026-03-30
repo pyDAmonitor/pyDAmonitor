@@ -3,6 +3,10 @@ doc_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 ### users usually do not need to make changes below this line
 ### ========================================================================
+if [[ "$CONDA_DEFAULT_ENV" != "pyDAmonitor"  ]]; then
+  echo -e "\n    !!! source ush/load_pyDAmonitor.sh first !!!\n"
+  exit 1
+fi
 #
 # save the origin URL before running ghp-import, which has to use the origin remote
 save_origin=$(git remote get-url origin)
