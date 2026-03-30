@@ -46,4 +46,7 @@ fi
 ln -snf ${FIX_RRFS_LOCATION} ${agent_dir}
 
 touch ${run_dir}/../data/INIT_DONE
-cp ${run_dir}/pre-commit ${run_dir}/../.git/hooks
+cd ${run_dir}/..
+mkdir -p .githooks
+git config core.hooksPath .githooks
+cp ${run_dir}/pre-commit ${run_dir}/../.githooks

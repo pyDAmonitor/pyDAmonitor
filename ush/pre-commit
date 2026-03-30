@@ -7,7 +7,7 @@
 #
 STAGED_NOTEBOOKS=$(git diff --cached --name-only | grep "^notebooks/.*\.ipynb$")
 if [[ "$CONDA_DEFAULT_ENV" != "pyDAmonitor"  ]]; then
-  echo "source ush/load_pyDAmonitor.sh first"
+  echo -e "\n    !!! source ush/load_pyDAmonitor.sh first !!!\n"
   exit 1
 fi
 for notebook in ${STAGED_NOTEBOOKS[@]}; do
