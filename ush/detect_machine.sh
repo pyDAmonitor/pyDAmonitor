@@ -10,16 +10,19 @@ case $(hostname -f) in
   dlogin0[1-9].dogwood.wcoss2.ncep.noaa.gov) MACHINE=wcoss2 ;; ### dogwood01-9
   dlogin10.dogwood.wcoss2.ncep.noaa.gov)     MACHINE=wcoss2 ;; ### dogwood10
 
-  gaea|gaea5[1-8])     MACHINE=gaea ;;
-  gaea6[1-8])          MACHINE=gaea ;;
-  gaea.ncrc.gov|gaea5[1-8].ncrc.gov) MACHINE=gaea ;;
-  gaea6[1-8].ncrc.gov)               MACHINE=gaea ;;
+  gaea|gaea5[1-8])     MACHINE=gaeac5 ;;
+  gaea6[1-8])          MACHINE=gaeac6 ;;
+  gaea.ncrc.gov|gaea5[1-8].ncrc.gov) MACHINE=gaeac5 ;;
+  gaea6[1-8].ncrc.gov)               MACHINE=gaeac6 ;;
 
   hfe0[1-9]) MACHINE=hera ;; ### hera01-09
   hfe1[0-2]) MACHINE=hera ;; ### hera10-12
   hecflow01) MACHINE=hera ;; ### heraecflow01
 
   ufe*) MACHINE=ursa ;;
+  u01*) MACHINE=ursa ;;
+  uecflow01) MACHINE=ursa ;;
+
   derecho*) MACHINE=derecho ;;
   casper*) MACHINE=derecho ;;
 
@@ -59,26 +62,31 @@ if [[ "${MACHINE}" == "UNKNOWN" ]]; then
   elif [[ -d /mnt/lfs5 ]]; then
     # We are on NOAA Jet
     MACHINE=jet
-  elif [[ -d /scratch1 ]]; then
-    # We are on NOAA Hera
-    MACHINE=hera
   elif [[ -d /scratch3 ]]; then
-    # We are on NOAA Ursa
-    MACHINE=ursa
+    if [[ -d /apps/slurm_hera ]]; then
+      # We are on Hera
+      MACHINE=hera
+    else
+      # We are on Ursa
+      MACHINE=ursa
+    fi
+  elif [[ -d /glade/derecho ]]; then
+    # We are on Derecho
+    MACHINE=derecho
   elif [[ -d /work ]]; then
     # We are on MSU Orion or Hercules
-    if [[ -d /apps/other ]]; then
+    if [[ -d /apps/etc ]]; then
       # We are on Hercules
       MACHINE=hercules
     else
       MACHINE=orion
     fi
   elif [[ -d /gpfs/f5 && -d /ncrc ]]; then
-    # We are on GAEA
-    MACHINE=gaea
+    # We are on GAEA C5
+    MACHINE=gaeac5
   elif [[ -d /gpfs/f6 && -d /ncrc ]]; then
-    # We are on GAEA
-    MACHINE=gaea
+    # We are on GAEA C6
+    MACHINE=gaeac6
   elif [[ -d /data/prod ]]; then
     # We are on SSEC's S4
     MACHINE=s4
