@@ -70,8 +70,8 @@ def minimization_stats(data, fname, iOuterloop):
 
 
 def obs_counts(fname, pre_loop, loop1, loop2, oma):
-    dcKnt, dcTmp = {}, {}
-    #-------------------------------------------------------------
+    dcKnt = {}
+    # -------------------------------------------------------------
     # get all observers in this JEDI run
     # ~~~~~ find the first 'read database' line
     for i, line in enumerate(pre_loop):
@@ -96,7 +96,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
         pos = pos + 5
         if 'read database' not in pre_loop[pos]:
             break
-    #-------------------------------------------------------------
+    # -------------------------------------------------------------
     # -- get the obs count for loop0 and loop1
     pos, pos1, pos2, pos3, posBT1, posBT2 = 0, 0, 0, 0, 0, 0
     for observer in dcKnt:
@@ -187,8 +187,8 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                     break
                 else:
                     posBT2 += 1
-
-    # ~~~~~~~~~~~~
+    # -------------------------------------------------------------
+    # write out files
     with open(fname, 'w') as outfile:
         outfile.write(f"{'observer':>16} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'n_loop2':>8} {'obserr':>12} {'Jo/n_1':>12} {'Jo/n_2':>12}\n")
         for key in dcKnt:
@@ -198,7 +198,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 with open(f'{key}.txt', 'w') as satfile:
                     satfile.write(f'{key} each channel: n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8}\n')
                     satfile.write(f"{'channel':>7} {'n_loop1':>8} {'n_loop2':>8}\n")
-                    for (k1, v1), (k2, v2)  in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
+                    for (k1, v1), (k2, v2) in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
                         satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
 
 
