@@ -14,7 +14,7 @@ def write2file(fname, data):
 
 
 # stats for each outer loop
-def loop_stats(data, fname, iOuterloop):
+def minimization_stats(data, fname, iOuterloop):
     iterations = []
     start = -999
     end = -999
@@ -143,9 +143,9 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 pos3 += 1
     # ~~~~~~~~~~~~
     with open(fname, 'w') as outfile:
-        outfile.write(f"{'observer':>17} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'n_loop2':>8} {'obserr':>12} {'Jo/n_1':>12} {'Jo/n_2':>12}\n")
+        outfile.write(f"{'observer':>16} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'n_loop2':>8} {'obserr':>12} {'Jo/n_1':>12} {'Jo/n_2':>12}\n")
         for key, value in dcKnt.items():
-            outfile.write(f'{key:>16}: {dcKnt[key]["n_ioda"]:>8} {dcKnt[key]["nobs"]:>8} {dcKnt[key]["nobs_r"]:>8} {dcKnt[key]["n_loop1"]:>8}')
+            outfile.write(f'{key:>16} {dcKnt[key]["n_ioda"]:>8} {dcKnt[key]["nobs"]:>8} {dcKnt[key]["nobs_r"]:>8} {dcKnt[key]["n_loop1"]:>8}')
             outfile.write(f' {dcKnt[key]["n_loop2"]:>8} {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12} {dcKnt[key]["Jo/n_2"]:>12}\n')
 
 
@@ -195,8 +195,8 @@ if split_files:
     write2file('final', final)
 # ~~~~
 # write out the minimization.txt file
-loop_stats(loop1, 'minimization.txt', 1)
-loop_stats(loop2, 'minimization.txt', 2)
+minimization_stats(loop1, 'minimization.txt', 1)
+minimization_stats(loop2, 'minimization.txt', 2)
 #
 # write out the obs_counts.txt files
 obs_counts('obs_count.txt', pre_loop, loop1, loop2, oma)
