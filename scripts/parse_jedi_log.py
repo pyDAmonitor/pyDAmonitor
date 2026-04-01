@@ -12,9 +12,8 @@ def write2file(fname, data):
             outfile.write(f'{line}\n')
     outfile.close()
 
+
 # stats for each outer loop
-
-
 def loop_stats(data, fname, iOuterloop):
     iterations = []
     start = -999
@@ -71,61 +70,83 @@ def loop_stats(data, fname, iOuterloop):
 
 
 def obs_counts(fname, pre_loop, loop1, loop2, oma):
-    dcKnt = {}
-    # -- get the raw obs count in the ioda file
+    dcKnt, dcTmp = {}, {}
+    #-------------------------------------------------------------
+    # get all observers in this JEDI run
+    # ~~~~~ find the first 'read database' line
     for i, line in enumerate(pre_loop):
         if 'read database' in line:
             pos = i
             break
-    # ~~~~~~~~
+    # ~~~~~~~~ n_ioda, n_vars, is_BT(brightness temperature)
     while pos < len(pre_loop):
-        pos = pos + 5
-        line = pre_loop[pos-1]
-        observer, count = line.split(':')
+        line = pre_loop[pos+4]
+        observer = line.split(':')[0]
         numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
-        dcKnt[observer] = f'{numbers[1]:>8}'
+        dcKnt[observer] = {'n_ioda': numbers[1]}
+        #
+        line = pre_loop[pos+2]
+        numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
+        dcKnt[observer]['n_vars'] = numbers[0]
+        if "brightnessTemperature" in line:
+            dcKnt[observer]['is_BT'] = True
+        #
+        pos = pos + 5
         if 'read database' not in pre_loop[pos]:
             break
-    # ~~~~~~~~
+    #-------------------------------------------------------------
     # -- get the obs count for loop0 and loop1
-    pos = 0
-    pos2 = 0
-    pos3 = 0
+    pos, pos1, pos2, pos3 = 0, 0, 0, 0
     for observer in dcKnt:
-        pattern = rf"\b{observer}\b.*\bnlocs\b.*\bnobs\b.*\bmin\b.*\bmax\b.*\bavg\b"
+        # ~~~~~~~~ nobs
+        pattern = rf"^{observer}\b.*\bnlocs\b.*\bnobs\b"
         while pos < len(loop1):
             line = loop1[pos]
             if re.search(pattern, line):
                 numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer] = f'{dcKnt[observer]} {numbers[0]:>8} {numbers[1]:>8}'
+                dcKnt[observer]['nobs'] = numbers[0]
                 break
             else:
                 pos += 1
+        # ~~~~~~~~ nobs_r, right after "CostJo Observations:"
+        pattern = rf"^{observer} nobs\b.*\bMin\b.*\bMax\b.*\bRMS\b"
+        while pos1 < len(loop1):
+            line = loop1[pos1]
+            if re.search(pattern, line):
+                numbers = re.findall(r'\d+\.?\d*', line.split(' ', 1)[1])
+                dcKnt[observer]['nobs_r'] = numbers[0]
+                break
+            else:
+                pos1 += 1
         # ~~~~~~~~~~
-        # find n_loop1
+        # n_loop1, obserr, Jo/n_1
         while pos2 < len(loop1):
             line = loop1[pos2]
             if f'CostJo   : Nonlinear Jo({observer}' in line:
                 numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer] = f'{dcKnt[observer]} {numbers[1]:>8}'
+                dcKnt[observer]['n_loop1'] = numbers[1]
+                dcKnt[observer]['Jo/n_1'] = numbers[2]
+                dcKnt[observer]['obserr'] = numbers[3]
                 break
             else:
                 pos2 += 1
         # ~~~~~~~~~~
-        # find n_loop1
+        # n_loop2
         while pos3 < len(loop2):
             line = loop2[pos3]
             if f'CostJo   : Nonlinear Jo({observer}' in line:
                 numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer] = f'{dcKnt[observer]} {numbers[1]:>8}'
+                dcKnt[observer]['n_loop2'] = numbers[1]
+                dcKnt[observer]['Jo/n_2'] = numbers[2]
                 break
             else:
                 pos3 += 1
     # ~~~~~~~~~~~~
     with open(fname, 'w') as outfile:
-        outfile.write(f"{'observer':>19} {'n_raw':>8} {'n_locs':>8} {'n_loop0':>8} {'n_loop1':>8} {'n_loop2':>8}\n")
+        outfile.write(f"{'observer':>17} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'n_loop2':>8} {'obserr':>12} {'Jo/n_1':>12} {'Jo/n_2':>12}\n")
         for key, value in dcKnt.items():
-            outfile.write(f'{key:>18}: {value}\n')
+            outfile.write(f'{key:>16}: {dcKnt[key]["n_ioda"]:>8} {dcKnt[key]["nobs"]:>8} {dcKnt[key]["nobs_r"]:>8} {dcKnt[key]["n_loop1"]:>8}')
+            outfile.write(f' {dcKnt[key]["n_loop2"]:>8} {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12} {dcKnt[key]["Jo/n_2"]:>12}\n')
 
 
 #
@@ -146,7 +167,7 @@ if len(sys.argv) > 2 and "split" in sys.argv[2]:
 # -----------------------------------------------------------------------
 # read all lines and split into different blocks
 # -----------------------------------------------------------------------
-config, pre_loop, loop1, loop2, oma, last = ([] for _ in range(6))
+config, pre_loop, loop1, loop2, oma, final = ([] for _ in range(6))
 block = config  # block is a just pointer here, no data copy
 with open(logfile, 'r') as infile:
     for line in infile:
@@ -160,7 +181,7 @@ with open(logfile, 'r') as infile:
         elif line.startswith('Variational: incremental assimilation done'):
             block = oma
         elif line.startswith('==> destruct MPAS corelist and domain:  0'):
-            block = last
+            block = final
         # ~~~~~~
         block.append(line)
 # ~~~~~~~~~~~
@@ -171,7 +192,7 @@ if split_files:
     write2file('loop1', loop1)
     write2file('loop2', loop2)
     write2file('oma', oma)
-    write2file('last', last)
+    write2file('final', final)
 # ~~~~
 # write out the minimization.txt file
 loop_stats(loop1, 'minimization.txt', 1)
