@@ -25,7 +25,7 @@ case ${MACHINE} in
   hercules)
     EXEC_DIR=/work/noaa/zrtrr/gge/hercules/Miniforge3/envs/pyDAmonitor/bin
     ;;
-  gaea)
+  gaeac?)
     if [[ -d /gpfs/f5 ]]; then
       EXEC_DIR=/to/be/added
     elif [[ -d /gpfs/f6 ]]; then

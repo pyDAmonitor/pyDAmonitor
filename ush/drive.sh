@@ -31,7 +31,8 @@ cd "${WORKDIR}"
 ln -snf ${JEDI_DIR}/* .
 #
 # parse the jedi log file to get minimization.txt and obs_counts.txt
-${PYDAMONITOR}/parse_jedi_log.py
+ln -snf ${PYDAMONITOR}/parse_jedi_log.py .
+./parse_jedi_log.py
 #
 #
 date
