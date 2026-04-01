@@ -90,13 +90,15 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
         dcKnt[observer]['n_vars'] = numbers[0]
         if "brightnessTemperature" in line:
             dcKnt[observer]['is_BT'] = True
+        else:
+            dcKnt[observer]['is_BT'] = False
         #
         pos = pos + 5
         if 'read database' not in pre_loop[pos]:
             break
     #-------------------------------------------------------------
     # -- get the obs count for loop0 and loop1
-    pos, pos1, pos2, pos3 = 0, 0, 0, 0
+    pos, pos1, pos2, pos3, posBT1, posBT2 = 0, 0, 0, 0, 0, 0
     for observer in dcKnt:
         # ~~~~~~~~ nobs
         pattern = rf"^{observer}\b.*\bnlocs\b.*\bnobs\b"
@@ -104,7 +106,11 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
             line = loop1[pos]
             if re.search(pattern, line):
                 numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer]['nobs'] = numbers[0]
+                if dcKnt[observer]['is_BT']:
+                    dcKnt[observer]['nobs_singleBT'] = numbers[0]
+                    dcKnt[observer]['nobs'] = str(int(numbers[0]) * int(dcKnt[observer]['n_vars']))
+                else:
+                    dcKnt[observer]['nobs'] = numbers[0]
                 break
             else:
                 pos += 1
@@ -115,6 +121,8 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
             if re.search(pattern, line):
                 numbers = re.findall(r'\d+\.?\d*', line.split(' ', 1)[1])
                 dcKnt[observer]['nobs_r'] = numbers[0]
+                if dcKnt[observer]['is_BT']:
+                    dcKnt[observer]['nobs_r_singleBT'] = str(int(int(numbers[0]) / int(dcKnt[observer]['n_vars'])))
                 break
             else:
                 pos1 += 1
@@ -141,12 +149,57 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 break
             else:
                 pos3 += 1
+        # ~~~~~~~~~~
+        # satellite n_loop1, nloop2 per channel
+        if dcKnt[observer]['is_BT']:
+            while posBT1 < len(loop1):
+                line = loop1[posBT1]
+                if f'Jo Obs :{observer}:brightnessTemperature' in line:
+                    dcKnt[observer]['ch_loop1'] = {}
+                    for i in range(int(dcKnt[observer]['n_vars'])):
+                        line = loop1[posBT1 + i]
+                        segments = line.split(':')
+                        channel = segments[2].strip().split('_')[1].strip()
+                        if 'No observations' in segments[3]:
+                            dcKnt[observer]['ch_loop1'][channel] = '0'
+                        else:
+                            numbers = re.findall(r'\d+\.?\d*', segments[3].strip())
+                            dcKnt[observer]['ch_loop1'][channel] = numbers[0]
+                    posBT1 += int(dcKnt[observer]['n_vars'])
+                    break
+                else:
+                    posBT1 += 1
+            # ~~~~~~~~
+            while posBT2 < len(loop2):
+                line = loop2[posBT2]
+                if f'Jo Obs :{observer}:brightnessTemperature' in line:
+                    dcKnt[observer]['ch_loop2'] = {}
+                    for i in range(int(dcKnt[observer]['n_vars'])):
+                        line = loop2[posBT2 + i]
+                        segments = line.split(':')
+                        channel = segments[2].strip().split('_')[1].strip()
+                        if 'No observations' in segments[3]:
+                            dcKnt[observer]['ch_loop2'][channel] = '0'
+                        else:
+                            numbers = re.findall(r'\d+\.?\d*', segments[3].strip())
+                            dcKnt[observer]['ch_loop2'][channel] = numbers[0]
+                    posBT2 += int(dcKnt[observer]['n_vars'])
+                    break
+                else:
+                    posBT2 += 1
+
     # ~~~~~~~~~~~~
     with open(fname, 'w') as outfile:
         outfile.write(f"{'observer':>16} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'n_loop2':>8} {'obserr':>12} {'Jo/n_1':>12} {'Jo/n_2':>12}\n")
-        for key, value in dcKnt.items():
+        for key in dcKnt:
             outfile.write(f'{key:>16} {dcKnt[key]["n_ioda"]:>8} {dcKnt[key]["nobs"]:>8} {dcKnt[key]["nobs_r"]:>8} {dcKnt[key]["n_loop1"]:>8}')
             outfile.write(f' {dcKnt[key]["n_loop2"]:>8} {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12} {dcKnt[key]["Jo/n_2"]:>12}\n')
+            if dcKnt[key]['is_BT']:  # write out obs counts per each satellite channel to a seperate fie
+                with open(f'{key}.txt', 'w') as satfile:
+                    satfile.write(f'{key} each channel: n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8}\n')
+                    satfile.write(f"{'channel':>7} {'n_loop1':>8} {'n_loop2':>8}\n")
+                    for (k1, v1), (k2, v2)  in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
+                        satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
 
 
 #
