@@ -72,30 +72,33 @@ def minimization_stats(data, fname, iOuterloop):
 def obs_counts(fname, pre_loop, loop1, loop2, oma):
     dcKnt = {}
     # -------------------------------------------------------------
-    # get all observers in this JEDI run
-    # ~~~~~ find the first 'read database' line
-    for i, line in enumerate(pre_loop):
-        if 'read database' in line:
-            pos = i
-            break
-    # ~~~~~~~~ n_ioda, n_vars, is_BT(brightness temperature)
+    # ~~~~~~~~ n_ioda, n_vars, is_BT(brightness temperature), loop through all observers
+    pos = 0
     while pos < len(pre_loop):
-        line = pre_loop[pos+4]
+        # ~~~~~ find 'read database' line
+        for i in range(pos, len(pre_loop)):
+            if 'read database' in pre_loop[i]:
+                pos = i
+                break
+            else:
+                pos += 1
+        if pos >= len(pre_loop):
+            break
+        line = pre_loop[pos+3]
         observer = line.split(':')[0]
         numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
-        dcKnt[observer] = {'n_ioda': numbers[1]}
-        #
-        line = pre_loop[pos+2]
-        numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
-        dcKnt[observer]['n_vars'] = numbers[0]
-        if "brightnessTemperature" in line:
-            dcKnt[observer]['is_BT'] = True
-        else:
-            dcKnt[observer]['is_BT'] = False
-        #
-        pos = pos + 5
-        if 'read database' not in pre_loop[pos]:
-            break
+        if int(numbers[1]) > 0:
+            dcKnt[observer] = {'n_ioda': numbers[1]}
+            #
+            line = pre_loop[pos+2]
+            numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
+            dcKnt[observer]['n_vars'] = numbers[0]
+            if "brightnessTemperature" in line:
+                dcKnt[observer]['is_BT'] = True
+            else:
+                dcKnt[observer]['is_BT'] = False
+        # ~~~~~~~~~
+        pos += 5
     # -------------------------------------------------------------
     # -- get the obs count for loop0 and loop1
     pos, pos1, pos2, pos3, posBT1, posBT2 = 0, 0, 0, 0, 0, 0
@@ -106,11 +109,9 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
             line = loop1[pos]
             if re.search(pattern, line):
                 numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
+                dcKnt[observer]['nobs'] = str(int(numbers[0]) * int(dcKnt[observer]['n_vars']))
                 if dcKnt[observer]['is_BT']:
                     dcKnt[observer]['nobs_singleBT'] = numbers[0]
-                    dcKnt[observer]['nobs'] = str(int(numbers[0]) * int(dcKnt[observer]['n_vars']))
-                else:
-                    dcKnt[observer]['nobs'] = numbers[0]
                 break
             else:
                 pos += 1
@@ -196,10 +197,12 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
             outfile.write(f' {dcKnt[key]["n_loop2"]:>8} {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12} {dcKnt[key]["Jo/n_2"]:>12}\n')
             if dcKnt[key]['is_BT']:  # write out obs counts per each satellite channel to a seperate fie
                 with open(f'{key}.txt', 'w') as satfile:
-                    satfile.write(f'{key} each channel: n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8}\n')
+                    satfile.write(f'{key}: each channel(n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8})\n'
+                                  f'sum of all channels: n_loop1={dcKnt[key]["n_loop1"]:>8}, n_loop2={dcKnt[key]["n_loop2"]:>8}\n')
                     satfile.write(f"{'channel':>7} {'n_loop1':>8} {'n_loop2':>8}\n")
                     for (k1, v1), (k2, v2) in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
-                        satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
+                        if int(v1) != 0 or int(v2) != 0:
+                            satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
 
 
 #
