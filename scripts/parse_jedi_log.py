@@ -197,7 +197,8 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
             outfile.write(f' {dcKnt[key]["n_loop2"]:>8} {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12} {dcKnt[key]["Jo/n_2"]:>12}\n')
             if dcKnt[key]['is_BT']:  # write out obs counts per each satellite channel to a seperate fie
                 with open(f'{key}.txt', 'w') as satfile:
-                    satfile.write(f'{key} each channel: n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8}\n')
+                    satfile.write(f'{key}: each channel(n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8})\n'
+                                  f'sum of all channels: n_loop1={dcKnt[key]["n_loop1"]:>8}, n_loop2={dcKnt[key]["n_loop2"]:>8}\n')
                     satfile.write(f"{'channel':>7} {'n_loop1':>8} {'n_loop2':>8}\n")
                     for (k1, v1), (k2, v2) in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
                         if int(v1) != 0 or int(v2) != 0:
