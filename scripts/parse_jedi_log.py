@@ -81,7 +81,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 pos = i
                 break
             else:
-                pos +=1
+                pos += 1
         if pos >= len(pre_loop):
             break
         line = pre_loop[pos+3]
