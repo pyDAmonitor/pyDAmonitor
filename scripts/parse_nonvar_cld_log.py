@@ -20,7 +20,8 @@ def parse_in_args(argv):
 
     """
 
-    parser = argparse.ArgumentParser(description='Script that plots parses output from nonvar cloud \
+    parser = argparse.ArgumentParser(description='Script that plots parses \
+                                                  output from nonvar cloud \
                                                   analysis log files.')
     
     # Optional arguments
@@ -198,15 +199,14 @@ def parse_cloudanalysis(fname):
            'status': 4*['not_used']}
 
     with open(fname, 'r') as fptr:
+        tmpl = 'gsdcloudanalysis: {obs} read in successfully'
         for line in fptr:
-            if 'gsdcloudanalysis: NASA LaRC cloud products are read in successfully' in line:
-                out['status'][0] = 'ingested'
-            elif 'gsdcloudanalysis: Surface cloud observations are read in successfully' in line:
-                out['status'][1] = 'ingested'
-            elif 'gsdcloudanalysis: Lightning is read in successfully' in line:
-                out['status'][2] = 'ingested'
-            elif 'gsdcloudanalysis: radar reflectivity is read in successfully' in line:
-                out['status'][3] = 'ingested'
+            for i, obs in enumerate(['NASA LaRC cloud products are',
+                                     'Surface cloud observations are',
+                                     'Lightning is',
+                                     'radar reflectivity is']):
+                if tmpl.format(obs=obs) in line:
+                    out['status'][i] = 'ingested'
 
     return out
 
