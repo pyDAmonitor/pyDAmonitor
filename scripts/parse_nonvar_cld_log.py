@@ -42,7 +42,7 @@ def parse_in_args(argv):
                         help='Log file from lightning.fd',
                         type=str)
 
-    parser.add_argument('--refmosiac',
+    parser.add_argument('--refmosaic',
                         dest='refmosaic_log',
                         default='missing',
                         help='Log file from refmosaic_nonvar.fd',
@@ -171,8 +171,8 @@ def parse_refmosaic(fname):
         for line in fptr:
             if 'level max min height' in line:
                 out['number'][0] = out['number'][0] + 1
-                out['number'][1] = max(out['number'][1], int(line.split()[-3]))
-                out['number'][2] = max(out['number'][2], int(line.split()[-2]))
+                out['number'][1] = max(out['number'][1], float(line.split()[-3]))
+                out['number'][2] = min(out['number'][2], float(line.split()[-2]))
 
     return out
 
@@ -264,8 +264,8 @@ def write_results(out_all, fname):
 
     """
 
-    with open(fname, 'r') as fptr:
-        tmpl = '{s1:>25}{s2:>25}{s3:>25}{s4:>25}'
+    with open(fname, 'w') as fptr:
+        tmpl = '{s1:>22}{s2:>25}{s3:>15}{s4:>15}\n'
         fptr.write(tmpl.format(s1='program', 
                                s2='observation', 
                                s3='number', 
@@ -274,7 +274,7 @@ def write_results(out_all, fname):
             fptr.write(tmpl.format(s1=out_all['program'][i],
                                    s2=out_all['observation'][i],
                                    s3=out_all['number'][i],
-                                   s4=out_all['status'][i])
+                                   s4=out_all['status'][i]))
 
 
 #
