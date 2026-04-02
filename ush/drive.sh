@@ -22,9 +22,13 @@ export PYDAMONITOR=${HOMErrfs}/workflow/sideload/pyDAmonitor/scripts
 if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
   export WORKDIR=${COMOUT}/pyDAmonitor_spinup
   export JEDI_DIR=${COMOUT}/jedivar_spinup/${WGF}
+  export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana_spinup/${WGF}
+  export LOG_DIR=???
 else
   export WORKDIR=${COMOUT}/pyDAmonitor
   export JEDI_DIR=${COMOUT}/jedivar/${WGF}
+  export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana/${WGF}
+  export LOG_DIR=???
 fi
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
@@ -33,6 +37,15 @@ ln -snf ${JEDI_DIR}/* .
 # parse the jedi log file to get minimization.txt and obs_counts.txt
 ln -snf ${PYDAMONITOR}/parse_jedi_log.py .
 ./parse_jedi_log.py
+#
+# parse the nonvar cloud analysis log files to get nonvar_cloud_out.txt
+ln -snf ${PYDAMONITOR}/parse_nonvar_cld_log.py .
+./parse_jedi_log.py \
+	--larccld ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
+	--metarcld ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
+	--lightning ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
+	--refmosaic ${LOG_DIR}/rrfs_nonvar_reflobs_rrfsv2x_${CYC_TIME}.log \
+	--cloudanalysis ${NONVAR_CLD_DIR}/stdout_cloudanalysis.d0000
 #
 #
 date
