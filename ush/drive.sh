@@ -40,7 +40,7 @@ ln -snf ${PYDAMONITOR}/parse_jedi_log.py .
 #
 # parse the nonvar cloud analysis log files to get nonvar_cloud_out.txt
 ln -snf ${PYDAMONITOR}/parse_nonvar_cld_log.py .
-./parse_jedi_log.py \
+./parse_nonvar_cld_log.py \
 	--larccld ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
 	--metarcld ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
 	--lightning ${LOG_DIR}/rrfs_nonvar_bufrobs_rrfsv2x_${CYC_TIME}.log \
