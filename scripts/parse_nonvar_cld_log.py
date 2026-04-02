@@ -27,31 +27,31 @@ def parse_in_args(argv):
     # Optional arguments
     parser.add_argument('--larccld',
                         dest='larccld_log',
-                        default='missing',
+                        default='nonvar_larccld.log',
                         help='Log file from larccld.fd',
                         type=str)
 
     parser.add_argument('--metarcld',
                         dest='metarcld_log',
-                        default='missing',
+                        default='nonvar_metarcld.log',
                         help='Log file from metarcld.fd',
                         type=str)
 
     parser.add_argument('--lightning',
                         dest='lightning_log',
-                        default='missing',
+                        default='nonvar_lightning.log',
                         help='Log file from lightning.fd',
                         type=str)
 
     parser.add_argument('--refmosaic',
                         dest='refmosaic_log',
-                        default='missing',
+                        default='nonvar_refmosaic.log',
                         help='Log file from refmosaic_nonvar.fd',
                         type=str)
 
     parser.add_argument('--cloudanalysis',
                         dest='cloudanalysis_log',
-                        default='missing',
+                        default='stdout_cloudanalysis',
                         help='Log file from cloudanalysis.fd',
                         type=str)
 
