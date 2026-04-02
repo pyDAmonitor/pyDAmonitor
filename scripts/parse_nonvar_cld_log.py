@@ -2,8 +2,8 @@
 # parse nonvar cloud analysis stats from the log file
 #
 import sys
-import re
 import argparse
+
 
 def parse_in_args(argv):
     """
@@ -13,7 +13,7 @@ def parse_in_args(argv):
     ----------
     argv : list
         Command-line arguments from sys.argv[1:]
-    
+
     Returns
     -------
     Parsed input arguments
@@ -23,7 +23,7 @@ def parse_in_args(argv):
     parser = argparse.ArgumentParser(description='Script that plots parses \
                                                   output from nonvar cloud \
                                                   analysis log files.')
-    
+
     # Optional arguments
     parser.add_argument('--larccld',
                         dest='larccld_log',
@@ -266,9 +266,9 @@ def write_results(out_all, fname):
 
     with open(fname, 'w') as fptr:
         tmpl = '{s1:>22}{s2:>25}{s3:>15}{s4:>15}\n'
-        fptr.write(tmpl.format(s1='program', 
-                               s2='observation', 
-                               s3='number', 
+        fptr.write(tmpl.format(s1='program',
+                               s2='observation',
+                               s3='number',
                                s4='status'))
         for i in range(len(out_all['program'])):
             fptr.write(tmpl.format(s1=out_all['program'][i],
@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
     # Read in user inputs
     param = parse_in_args(sys.argv[1:])
-    
+
     # Run parser for each log file
     out_all = run_nonvar_parse_all(param)
 
