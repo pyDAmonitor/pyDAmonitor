@@ -239,10 +239,12 @@ def run_nonvar_parse_all(fnames):
 
     for key in fcts:
         if key in fnames:
-            if fnames[key] != 'missing':
+            try:
                 out = fcts[key](fnames[key])
                 for field in out_all:
                     out_all[field] = out_all[field] + out[field]
+            except FileNotFoundError:
+                print(f"WARNING: File not found. Skipping {key}. File: {fnames[key]}")
 
     return out_all
 
