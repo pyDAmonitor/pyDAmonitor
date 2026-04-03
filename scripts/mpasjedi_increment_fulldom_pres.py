@@ -44,9 +44,9 @@ cen_lon = -98
 
 # JEDI data
 datapath = "./"
-jstatic      = "/scratch4/BMC/wrfruc/eure/RRFSv2/retro/na12kmtms_s02_v4/stmp/20250314/rrfs_jedivar_01_v2.1.3/det/jedivar_01/invariant.nc" #file with grid info
-janalysis   = "/scratch4/BMC/wrfruc/eure/RRFSv2/retro/na12kmtms_s02_v4/stmp/20250314/rrfs_jedivar_01_v2.1.3/det/jedivar_01/mpasout_test.nc" # analysis file
-jbackgrnd   = "/scratch4/BMC/wrfruc/eure/RRFSv2/retro/na12kmtms_s02_v4/stmp/20250314/rrfs_prep_ic_01_v2.1.3/det/mpasout.nc" # background file
+jstatic      = "invariant.nc" #file with grid info
+janalysis   = "analysis.nc" # analysis file
+jbackgrnd   = "background.nc" # background file
 
 ###################################################################################
 # Set cartopy shapefile path
