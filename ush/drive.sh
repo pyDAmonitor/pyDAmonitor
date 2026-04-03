@@ -19,12 +19,19 @@ export PYDAMONITOR=${HOMErrfs}/workflow/sideload/pyDAmonitor/scripts
 # Obtain unique process id (pid) and create the run directory (DATA).
 #-----------------------------------------------------------------------
 #
+export LOG_DIR=${COMROOT}/${NET}/${VERSION}/logs/${RUN}.${PDY}/${cyc}/${WGF}
 if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
   export WORKDIR=${COMOUT}/pyDAmonitor_spinup
   export JEDI_DIR=${COMOUT}/jedivar_spinup/${WGF}
+  export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana_spinup/${WGF}
+  export NONVAR_BUFR_LOG=${LOG_DIR}/rrfs_nonvar_bufrobs_spinup_${TAG}_${CDATE}.log
+  export NONVAR_REFL_LOG=${LOG_DIR}/rrfs_nonvar_reflobs_spinup_${TAG}_${CDATE}.log
 else
   export WORKDIR=${COMOUT}/pyDAmonitor
   export JEDI_DIR=${COMOUT}/jedivar/${WGF}
+  export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana/${WGF}
+  export NONVAR_BUFR_LOG=${LOG_DIR}/rrfs_nonvar_bufrobs_${TAG}_${CDATE}.log
+  export NONVAR_REFL_LOG=${LOG_DIR}/rrfs_nonvar_reflobs_${TAG}_${CDATE}.log
 fi
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
@@ -33,6 +40,17 @@ ln -snf ${JEDI_DIR}/* .
 # parse the jedi log file to get minimization.txt and obs_counts.txt
 ln -snf ${PYDAMONITOR}/parse_jedi_log.py .
 ./parse_jedi_log.py
+#
+# parse the nonvar cloud analysis log files to get nonvar_cloud_out.txt
+if [[ "${DO_NONVAR_CLOUD_ANA:-FALSE}" == "TRUE" ]]; then
+  ln -snf ${NONVAR_BUFR_LOG} nonvar_larccld.log
+  ln -snf ${NONVAR_BUFR_LOG} nonvar_metarcld.log
+  ln -snf ${NONVAR_BUFR_LOG} nonvar_lightning.log
+  ln -snf ${NONVAR_REFL_LOG} nonvar_refmosaic.log
+  ln -snf ${NONVAR_CLD_DIR}/stdout_cloudanalysis.d0000 stdout_cloudanalysis
+  ln -snf ${PYDAMONITOR}/parse_nonvar_cld_log.py .
+  ./parse_nonvar_cld_log.py
+fi
 #
 #
 date
