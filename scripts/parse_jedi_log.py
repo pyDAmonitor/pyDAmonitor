@@ -205,54 +205,59 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                             satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
 
 
+def parse_jedi_log(logfile, split_files=False):
+    # -----------------------------------------------------------------------
+    # read all lines and split into different blocks
+    # -----------------------------------------------------------------------
+    config, pre_loop, loop1, loop2, oma, final = ([] for _ in range(6))
+    block = config  # block is a just pointer here, no data copy
+    with open(logfile, 'r') as infile:
+        for line in infile:
+            line = line.rstrip()  # strip all trailing empty spaces
+            if line.startswith('OOPS_STATS ObjectCountHelper started'):
+                block = pre_loop
+            elif line.startswith('IncrementalAssimilation: Configuration for outer iteration 0'):
+                block = loop1
+            elif line.startswith('IncrementalAssimilation: Configuration for outer iteration 1'):
+                block = loop2
+            elif line.startswith('Variational: incremental assimilation done'):
+                block = oma
+            elif line.startswith('==> destruct MPAS corelist and domain:  0'):
+                block = final
+            # ~~~~~~
+            block.append(line)
+    # ~~~~~~~~~~~
+    # write each block into a txt file when needed
+    if split_files:
+        write2file('config', config)
+        write2file('pre_loop', pre_loop)
+        write2file('loop1', loop1)
+        write2file('loop2', loop2)
+        write2file('oma', oma)
+        write2file('final', final)
+    # ~~~~
+    # write out the minimization.txt file
+    minimization_stats(loop1, 'minimization.txt', 1)
+    minimization_stats(loop2, 'minimization.txt', 2)
+    #
+    # write out the obs_counts.txt files
+    obs_counts('obs_count.txt', pre_loop, loop1, loop2, oma)
+
 #
 # ***********************************************************************
 # !!  MAIN starts here !!
 # ***********************************************************************
-# read the log file name from the command line; if not specified, default to 'log.out'
-split_files = False
-logfile = 'log.out'
-if len(sys.argv) > 1:
-    logfile = sys.argv[1]
-    if "split" in logfile:
-        logfile = 'log.out'
+if __name__ == '__main__':
+
+    # read the log file name from the command line; if not specified, default to 'log.out'
+    split_files = False
+    logfile = 'log.out'
+    if len(sys.argv) > 1:
+        logfile = sys.argv[1]
+        if "split" in logfile:
+            logfile = 'log.out'
+            split_files = True
+    if len(sys.argv) > 2 and "split" in sys.argv[2]:
         split_files = True
-if len(sys.argv) > 2 and "split" in sys.argv[2]:
-    split_files = True
-#
-# -----------------------------------------------------------------------
-# read all lines and split into different blocks
-# -----------------------------------------------------------------------
-config, pre_loop, loop1, loop2, oma, final = ([] for _ in range(6))
-block = config  # block is a just pointer here, no data copy
-with open(logfile, 'r') as infile:
-    for line in infile:
-        line = line.rstrip()  # strip all trailing empty spaces
-        if line.startswith('OOPS_STATS ObjectCountHelper started'):
-            block = pre_loop
-        elif line.startswith('IncrementalAssimilation: Configuration for outer iteration 0'):
-            block = loop1
-        elif line.startswith('IncrementalAssimilation: Configuration for outer iteration 1'):
-            block = loop2
-        elif line.startswith('Variational: incremental assimilation done'):
-            block = oma
-        elif line.startswith('==> destruct MPAS corelist and domain:  0'):
-            block = final
-        # ~~~~~~
-        block.append(line)
-# ~~~~~~~~~~~
-# write each block into a txt file when needed
-if split_files:
-    write2file('config', config)
-    write2file('pre_loop', pre_loop)
-    write2file('loop1', loop1)
-    write2file('loop2', loop2)
-    write2file('oma', oma)
-    write2file('final', final)
-# ~~~~
-# write out the minimization.txt file
-minimization_stats(loop1, 'minimization.txt', 1)
-minimization_stats(loop2, 'minimization.txt', 2)
-#
-# write out the obs_counts.txt files
-obs_counts('obs_count.txt', pre_loop, loop1, loop2, oma)
+
+    parse_jedi_log(logfile, split_files)
