@@ -243,6 +243,7 @@ def parse_jedi_log(logfile, split_files=False):
     # write out the obs_counts.txt files
     obs_counts('obs_count.txt', pre_loop, loop1, loop2, oma)
 
+
 #
 # ***********************************************************************
 # !!  MAIN starts here !!
