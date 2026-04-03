@@ -121,6 +121,14 @@ for nc_key in nc_keys:
         bot = cen_lat - half
         top = cen_lat + half
 
+        # Set extent for both plots
+        m1.set_extent([left, right, top, bot])
+
+        # Add features to the subplots
+        m1.add_feature(cfeature.COASTLINE)
+        m1.add_feature(cfeature.BORDERS)
+        m1.add_feature(cfeature.STATES)
+
         # Gridlines
         gl1 = m1.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color='k', alpha=0.25, linestyle='-')
         gl1.xlocator = mticker.FixedLocator(np.arange(-180., 181., 5.))
