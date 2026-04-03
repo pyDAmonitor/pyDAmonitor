@@ -1,42 +1,41 @@
 #!/usr/bin/env python
+from scipy.interpolate import interp1d
+from matplotlib.tri import Triangulation, TriAnalyzer
+import warnings
+import os
+import colormap
+import numpy as np
+import matplotlib.ticker as mticker
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import cartopy.feature as cfeature
+import cartopy.crs as ccrs
+import cartopy
+import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import matplotlib
 matplotlib.use('agg')
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import cartopy
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-import matplotlib.ticker as mticker
-import numpy as np
-import colormap
-import os
-import warnings
-from matplotlib.tri import Triangulation, TriAnalyzer
-from scipy.interpolate import interp1d
 
 warnings.filterwarnings('ignore')
 
-############ USER INPUT ##########################################################
-#create variable with important info on each field requested
-#"nc variable": [plot/title name, unit, colorbar scale, conversion factor for units]
+# USER INPUT ##########################################################
+# create variable with important info on each field requested
+# "nc variable": [plot/title name, unit, colorbar scale, conversion factor for units]
 var_lookup = {
     "theta": ["airTemperature", "K", 1.0, 1.0],
     "qv":    ["qVapor", "g/kg", 1.0, 1000.0],
     "u":     ["uZonalWind", "m/s", 1.0, 1.0],
 }
-#this is the name of the field needed in the mpasout.nc file
+# this is the name of the field needed in the mpasout.nc file
 nc_keys = ["theta", "qv", "uReconstructZonal"]
-expname = "TMS" #used in plot and filename for saving
-pressure_levels = [200, 300, 400, 500, 600, 700, 800, 900] #pressure levels in hPa
+expname = "TMS"  # used in plot and filename for saving
+pressure_levels = [200, 300, 400, 500, 600, 700, 800, 900]  # pressure levels in hPa
 plot_var = "Increment"
 decimals = 2            # number of decimals to round for text boxes
-#plot_box_width = 100.   # define size of plot domain (units: lat/lon degrees)
-#plot_box_height = 50.
-#cen_lat = 34.5
-#cen_lon = -97.5
-#different numbers for NA domain
+# plot_box_width = 100.   # define size of plot domain (units: lat/lon degrees)
+# plot_box_height = 50.
+# cen_lat = 34.5
+# cen_lon = -97.5
+# different numbers for NA domain
 plot_box_width = 120.
 plot_box_height = 70.
 cen_lat = 35
@@ -44,18 +43,18 @@ cen_lon = -98
 
 # JEDI data
 datapath = "./"
-jstatic      = "invariant.nc" #file with grid info
-janalysis   = "analysis.nc" # analysis file
-jbackgrnd   = "background.nc" # background file
+jstatic = "invariant.nc"  # file with grid info
+janalysis = "analysis.nc"  # analysis file
+jbackgrnd = "background.nc"  # background file
 
 ###################################################################################
 # Set cartopy shapefile path
 platform = os.getenv('HOSTNAME').upper()
 if 'ORION' in platform:
-    cartopy.config['data_dir']='/work/noaa/fv3-cam/sdegelia/cartopy'
-elif 'H' in platform: # Will need to improve this once Hercules is supported
-    cartopy.config['data_dir']='/home/Donald.E.Lippi/cartopy'
-# Load static grid 
+    cartopy.config['data_dir'] = '/work/noaa/fv3-cam/sdegelia/cartopy'
+elif 'H' in platform:  # Will need to improve this once Hercules is supported
+    cartopy.config['data_dir'] = '/home/Donald.E.Lippi/cartopy'
+# Load static grid
 f_latlon = Dataset(jstatic, "r")
 lats = np.array(f_latlon.variables['latCell'][:]) * 180.0 / np.pi
 lons0 = np.array(f_latlon.variables['lonCell'][:]) * 180.0 / np.pi
@@ -79,37 +78,37 @@ for nc_key in nc_keys:
     jedi_a = nc_a.variables[nc_key][0, :, :].astype(np.float64)
     jedi_b = nc_b.variables[nc_key][0, :, :].astype(np.float64)
 
-    #Pressure (needed for all variables)
-    pres_3d = (nc_a.variables['pressure_p'][0,:,:] + nc_b['pressure_base'][0,:,:])/100.0
-    pres_a = (nc_a.variables['pressure_p'][0,:,:] + nc_b['pressure_base'][0,:,:])/100.0
-    pres_b = (nc_b.variables['pressure_p'][0,:,:] + nc_b['pressure_base'][0,:,:])/100.0
+    # Pressure (needed for all variables)
+    pres_3d = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
+    pres_a = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
+    pres_b = (nc_b.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
 
-    #convert to temp for 'theta' nc_key exception
+    # convert to temp for 'theta' nc_key exception
     if nc_key == "theta":
         dividend_a = (1000.0/pres_a)**(0.286)
         dividend_b = (1000.0/pres_b)**(0.286)
         jedi_a = jedi_a / dividend_a
         jedi_b = jedi_b / dividend_b
 
-    #apply conversion factor (e.g. *1000 for g/kg)
+    # apply conversion factor (e.g. *1000 for g/kg)
     jedi_inc_all = (jedi_a - jedi_b) * conv_factor
 
     # Interpolate using user-inputted pressure levels
     for pres_lev in pressure_levels:
-        jedi_inc = np.zeros((jedi_inc_all.shape[0], 1)) #initialize array
-        #loop over grid points
+        jedi_inc = np.zeros((jedi_inc_all.shape[0], 1))  # initialize array
+        # loop over grid points
         for i in range(jedi_inc_all.shape[0]):
-            #extract pressure level for current grid point
-            p_levels = pres_a[i, :] #p value at grid point
-            jedi_inc_val = jedi_inc_all[i, :] #corresponding increment
-            #create interpolator
+            # extract pressure level for current grid point
+            p_levels = pres_a[i, :]  # p value at grid point
+            jedi_inc_val = jedi_inc_all[i, :]  # corresponding increment
+            # create interpolator
             interpolator = interp1d(p_levels, jedi_inc_val, kind='linear', bounds_error=False, fill_value="extrapolate")
-            #interpolate to user input pressure level
+            # interpolate to user input pressure level
             jedi_inc[i, 0] = interpolator(pres_lev)
-        #reshape increment
+        # reshape increment
         jedi_inc = jedi_inc.squeeze()
 
-        #create plot
+        # create plot
         fig = plt.figure(figsize=(7, 4))
         m1 = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree(central_longitude=0))
 
@@ -138,13 +137,13 @@ for nc_key in nc_keys:
         gl1.xlabel_style = {'size': 5, 'color': 'gray'}
         gl1.ylabel_style = {'size': 5, 'color': 'gray'}
 
-        # Get levels for specific variable 
+        # Get levels for specific variable
         inc_step = 0.05 * clevmax
         clevs = np.arange(-1.0 * clevmax, 1.0 * clevmax + inc_step, inc_step)
         cm = colormap.diff_colormap(clevs)
-        units = unit_label #from the above variable
+        units = unit_label  # from the above variable
 
-        # Plot data using triangulation 
+        # Plot data using triangulation
         c1 = m1.tricontourf(triang, jedi_inc, clevs, cmap=cm, extend='both')
 
         # Add colorbar
@@ -163,6 +162,5 @@ for nc_key in nc_keys:
         plt.close(fig)
 
         # Print some final stats
-        print(f"Stats:")
+        print("Stats:")
         print(f" {clean_name} max: {np.around(np.max(jedi_inc), decimals)}")
-
