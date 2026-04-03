@@ -195,18 +195,27 @@ def parse_cloudanalysis(fname):
 
     out = {'program': 4*['cloudanalysis.fd'],
            'observation': ['nasa_larc', 'METAR', 'lightning', 'refl'],
-           'number': 4*['N/A'],
+           'number': 4*[0],
            'status': 4*['not_used']}
 
     with open(fname, 'r') as fptr:
         tmpl = 'gsdcloudanalysis: {obs} read in successfully'
-        for line in fptr:
-            for i, obs in enumerate(['NASA LaRC cloud products are',
+        contents = fptr.readlines()
+        for i, line in enumerate(contents):
+            if 'metar cloud=mta_cldmetarcld' in line:
+                out['number'][1] = int(contents[i+1].split()[1])
+            elif 'read in lightning from=' in line:
+                out['number'][2] = int(contents[i+1].split()[3])
+            elif 'ref_mosaic' in line:
+                out['number'][3] = out['number'][3] + 1
+            elif 'read NASA LaRC obs=' in line:
+                out['number'][0] = int(line.split()[-3])
+            for j, obs in enumerate(['NASA LaRC cloud products are',
                                      'Surface cloud observations are',
                                      'Lightning is',
                                      'radar reflectivity is']):
                 if tmpl.format(obs=obs) in line:
-                    out['status'][i] = 'ingested'
+                    out['status'][j] = 'ingested'
 
     return out
 
