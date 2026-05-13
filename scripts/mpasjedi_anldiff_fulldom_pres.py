@@ -149,7 +149,7 @@ for nc_key in nc_keys:
             count += 1
             print(f"{ymdh} collected")
             # close files
-            nc_1.close();
+            nc_1.close()
             nc_2.close()
         except Exception as e:
             print(f"Error: {e}")
