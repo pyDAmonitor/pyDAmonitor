@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# flake8: noqa
 from netCDF4 import Dataset
 import matplotlib.axes as maxes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -53,7 +52,7 @@ def main():
     plt.xlabel('Number of iterations',fontsize=20)
     plt.ylabel('Cost function',fontsize=20)
     plt.title('Cost Function',fontsize=20)
-    plt.legend(loc="upper left",fontsize=10)
+    plt.legend(loc="upper right",fontsize=10)
     plt.savefig(imfile)
 
 if __name__ == '__main__':
