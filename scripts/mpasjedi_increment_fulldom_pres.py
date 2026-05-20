@@ -83,12 +83,24 @@ for nc_key in nc_keys:
     pres_a = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
     pres_b = (nc_b.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
 
+    # read in surface pressure
+    pres_sfc_a = nc_a.variables['surface_pressure'][0,:]/100
+    pres_sfc_b = nc_b.variables['surface_pressure'][0,:]/100
+
+    # create NaNs for values below the surface pressure
+    pres_a = np.where(pres_a_raw <= pres_sfc_a[:, None], pres_a_raw, np.nan)
+    pres_b = np.where(pres_b_raw <= pres_sfc_b[:, None], pres_b_raw, np.nan)
+
     # convert to temp for 'theta' nc_key exception
     if nc_key == "theta":
         dividend_a = (1000.0/pres_a)**(0.286)
         dividend_b = (1000.0/pres_b)**(0.286)
         jedi_a = jedi_a / dividend_a
         jedi_b = jedi_b / dividend_b
+
+    # add same correction to jedi that we did to pres
+    jedi_a = np.where(np.isnan(pres_a), np.nan, jedi_a)
+    jedi_b = np.where(np.isnan(pres_b), np.nan, jedi_b)
 
     # apply conversion factor (e.g. *1000 for g/kg)
     jedi_inc_all = (jedi_a - jedi_b) * conv_factor
@@ -101,10 +113,19 @@ for nc_key in nc_keys:
             # extract pressure level for current grid point
             p_levels = pres_a[i, :]  # p value at grid point
             jedi_inc_val = jedi_inc_all[i, :]  # corresponding increment
-            # create interpolator
-            interpolator = interp1d(p_levels, jedi_inc_val, kind='linear', bounds_error=False, fill_value="extrapolate")
-            # interpolate to user input pressure level
-            jedi_inc[i, 0] = interpolator(pres_lev)
+            # filter out NaNs
+            valid = ~np.isnan(p_levels) & ~np.isnan(jedi_inc_val)
+            # need 2 points to do interp
+            if np.sum(valid) > 1:
+                if pres_lev <= np.nanmax(p_levels[valid]):
+                    interpolator = interp1d(p_levels[valid], jedi_inc_val[valid], kind='linear', bounds_error=False, fill_value=np.nan)
+                    jedi_inc[i] = interpolator(pres_lev)
+                else:
+                    # Target pressure is below the ground at this cell
+                    jedi_inc[i] = np.nan
+            else:
+                # Entire column is masked or insufficient data
+                jedi_inc[i] = np.nan
         # reshape increment
         jedi_inc = jedi_inc.squeeze()
 
