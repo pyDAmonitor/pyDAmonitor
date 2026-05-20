@@ -52,6 +52,8 @@ if [[ "${DO_NONVAR_CLOUD_ANA:-FALSE}" == "TRUE" ]]; then
   ./parse_nonvar_cld_log.py
 fi
 #
+ln -snf ${PYDAMONITOR}/costgrad_descent.py .
+./costgrad_descent.py
 #
 date
 echo "pyDAmonitor HAS COMPLETED NORMALLY!"
