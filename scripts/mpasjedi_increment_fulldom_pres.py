@@ -79,13 +79,12 @@ for nc_key in nc_keys:
     jedi_b = nc_b.variables[nc_key][0, :, :].astype(np.float64)
 
     # Pressure (needed for all variables)
-    pres_3d = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
-    pres_a = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
-    pres_b = (nc_b.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
+    pres_a_raw = (nc_a.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
+    pres_b_raw = (nc_b.variables['pressure_p'][0, :, :] + nc_b['pressure_base'][0, :, :])/100.0
 
     # read in surface pressure
-    pres_sfc_a = nc_a.variables['surface_pressure'][0,:]/100
-    pres_sfc_b = nc_b.variables['surface_pressure'][0,:]/100
+    pres_sfc_a = nc_a.variables['surface_pressure'][0, :]/100
+    pres_sfc_b = nc_b.variables['surface_pressure'][0, :]/100
 
     # create NaNs for values below the surface pressure
     pres_a = np.where(pres_a_raw <= pres_sfc_a[:, None], pres_a_raw, np.nan)
