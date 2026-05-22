@@ -173,11 +173,11 @@ if __name__ == '__main__':
     lookback_hours =  int(MAX_DAYS) * 24  # days * 24 hours
     dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
     daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
-    plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_t.png')
-    plot_tseries(tseries, group='adpsfc_q', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_q.png')
-    plot_tseries(tseries, group='adpsfc_uv', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_uv.png')
-    plot_tseries(tseries, group='adpsfc_ps', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_ps.png')
+    plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_t.png')
+    plot_tseries(tseries, group='adpsfc_q', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_q.png')
+    plot_tseries(tseries, group='adpsfc_uv', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_uv.png')
+    plot_tseries(tseries, group='adpsfc_ps', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_ps.png')
     #
-    plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpupa.png')
-    plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_aircar.png')
-    plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_sfcshp.png')
+    plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpupa.png')
+    plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_aircar.png')
+    plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')

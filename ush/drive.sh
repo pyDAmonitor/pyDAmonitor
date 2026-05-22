@@ -19,7 +19,7 @@ export PYDAMONITOR=${HOMErrfs}/workflow/sideload/pyDAmonitor
 # Obtain unique process id (pid) and create the run directory (DATA).
 #-----------------------------------------------------------------------
 #
-export MY_COM_BASE=${COMROOT}/${NET}/${VERSION}
+export MY_COM_BASE=${COMROOT}/${NET}/${rrfs_ver}
 export LOG_DIR=${MY_COM_BASE}/logs/${RUN}.${PDY}/${cyc}/${WGF}
 if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
   export WORKDIR=${COMOUT}/pyDAmonitor_spinup/${WGF}
@@ -58,9 +58,8 @@ ln -snf ${PYDAMONITOR}/scripts/costgrad_descent.py .
 ./costgrad_descent.py
 #
 # plot the time series of obs counts
-WGF=''
-ln -snf ${PYDAMONITOR}/scripts/timeseries_obs_count.py .
-./timeseries_obs_count.py ${CDATE} 10  # plot 10 days of obs counts
+ln -snf ${PYDAMONITOR}/scripts/obs_count_timeseries.py .
+./obs_count_timeseries.py ${CDATE} 10  # plot 10 days of obs counts
 #
 #
 date
