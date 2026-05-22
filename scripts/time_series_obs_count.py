@@ -1,0 +1,183 @@
+#!/usr/bin/env python
+# compute the summary in the past 7 days, 30 days
+#
+import sys
+import os
+import re
+from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+# list of observers to plot, add new ones accordingly
+observers = [
+    # adpsfc ----
+    'adpsfc_t181', 'adpsfc_t183', 'adpsfc_t187', 'adpsfc_q181', 'adpsfc_q183', 'adpsfc_q187',
+    'adpsfc_ps181', 'adpsfc_ps187', 'adpsfc_uv281', 'adpsfc_uv284', 'adpsfc_uv287',
+    # adpupa ----
+    'adpupa_t120', 'adpupa_q120', 'adpupa_ps120', 'adpupa_uv220',
+    # aircar ----
+    'aircar_t133', 'aircar_q133', 'aircar_uv233',
+    # sfcshp ----
+    'sfcshp_t180', 'sfcshp_t183', 'sfcshp_q180', 'sfcshp_q183',
+    'sfcshp_ps180', 'sfcshp_uv280', 'sfcshp_uv282', 'sfcshp_uv284',
+    # reflectivity ----
+    'refl10cm',
+]
+obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
+
+
+def read_obs_counts(CDATE, lookback_hours):
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
+    dateBgn = dateEnd - timedelta(hours=lookback_hours)
+    MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
+    WGF = os.getenv('WGF', 'WGF_not_defined')
+    RUN = os.getenv('RUN', 'RUN_not_defined')
+    #
+    # set default values to np.nan for each cycle
+    tseries = {
+        obs: {key: [np.nan] * (lookback_hours + 1) for key in obs_counts} for obs in observers
+    }
+    for i in range(lookback_hours+1):
+        dateCur = dateBgn + timedelta(hours=i)
+        PDY = datetime.strftime(dateCur, "%Y%m%d")
+        cyc = datetime.strftime(dateCur, "%H")
+        mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/obs_count.txt'
+        if os.path.exists(mypath):
+            # read all lines of obs_counts.txt
+            all_lines = []
+            with open(mypath, 'r') as infile:
+                for line in infile:
+                    if line.strip():
+                        all_lines.append(line.strip())
+            # update corresponding observers
+            for j in range(1, len(all_lines)):
+                segments = all_lines[j].split()
+                obs = segments[0].strip()
+                if obs in tseries:
+                    tseries[obs]['n_ioda'][i]  = segments[1].strip()
+                    tseries[obs]['nobs'][i]    = segments[2].strip()
+                    tseries[obs]['nobs_r'][i]  = segments[3].strip()
+                    tseries[obs]['n_loop1'][i] = segments[4].strip()
+                    tseries[obs]['n_loop2'][i] = segments[5].strip()
+                else:
+                    print(f'"{obs}" is NOT in the observers list')
+    # ~~~~~~~~~~~~~~~~~~
+    return dateBgn, tseries
+
+
+
+def plot_tseries(tseries, group, start_time, daterange, output_file=None):
+    """
+    Plot time series for all subtypes in a group.
+
+    Parameters
+    ----------
+    tseries     : dict  — the full tseries dictionary
+    group       : str   — prefix to filter on, e.g. 'adpsfc'
+    start_time  : str or datetime — start of the time window, e.g. '2024-01-01'
+    output_file : str or None — if given, save figure to this path
+    """
+    # --- filter observers belonging to this group ---
+    subtypes = [k for k in tseries if k.startswith(group)]
+    if not subtypes:
+        raise ValueError(f"No observers found with prefix '{group}'")
+
+    n_panels = len(subtypes)
+    #vars_to_plot = ['nobs', 'nobs_r', 'n_loop1', 'n_loop2']
+    #colors       = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    #linestyles   = ['-',       '--',       '-.',       ':']
+    vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
+    colors       = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    linestyles   = ['-',       '--',       '-.']
+
+    # --- build time axis ---
+    first_obs = subtypes[0]
+    N = len(tseries[first_obs]['nobs'])
+    time_index = pd.date_range(start=start_time, periods=N, freq='h')
+
+    # --- layout ---
+    fig, axes = plt.subplots(
+        nrows=n_panels, ncols=1,
+        figsize=(15, 2.8 * n_panels),
+        sharex=True
+    )
+    if n_panels == 1:
+        axes = [axes]   # keep iterable
+
+    fig.suptitle(f'{group}, obs counts, {daterange}', fontsize=13, fontweight='bold', x=0.4, y=1.002)
+
+    for ax, obs in zip(axes, subtypes):
+        d = tseries[obs]
+        has_data = False
+
+        for var, color, ls in zip(vars_to_plot, colors, linestyles):
+            y = np.array(d[var], dtype=float)   # NaN-safe cast
+            if not np.all(np.isnan(y)):          # skip fully-empty series
+                ax.plot(time_index, y,
+                        label=var, color=color, linestyle=ls,
+                        linewidth=1.2, alpha=0.85)
+                has_data = True
+
+        #ax.set_ylabel(obs, fontsize=8, rotation=0,
+        #              labelpad=90, va='center')
+        ax.text(0.02, 0.98, obs, transform=ax.transAxes, fontsize=8, rotation=0, va='top', ha='left')
+        ax.tick_params(axis='both', labelsize=8)
+        ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.5)
+        if not has_data:
+            ax.text(0.5, 0.5, 'no data', transform=ax.transAxes,
+                    ha='center', va='center', color='gray', fontsize=9)
+
+    # --- x-axis formatting (shared) ---
+    # every 6 hours, labeled with date+hour
+    axes[-1].xaxis.set_major_locator(mdates.HourLocator(byhour=[0, 6, 12, 18]))
+    axes[-1].xaxis.set_major_formatter(mdates.DateFormatter('%d\n%H'))
+    # minor ticks every hour (unlabeled tick marks only)
+    axes[-1].xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    # # plt.setp(axes[-1].xaxis.get_majorticklabels(), rotation=30, ha='right')
+    for ax in axes:
+        ax.tick_params(labelbottom=True)
+
+    # --- single shared legend at the top ---
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels,
+               loc='upper right', ncol=len(vars_to_plot),
+               fontsize=9, framealpha=0.8)
+
+    fig.tight_layout()
+
+    if output_file:
+        fig.savefig(output_file, dpi=150, bbox_inches='tight')
+        print(f"Saved → {output_file}")
+    else:
+        plt.show()
+
+    return fig
+
+
+#
+# ***********************************************************************
+# !!  MAIN starts here !!
+# ***********************************************************************
+if __name__ == '__main__':
+    # 
+    args = sys.argv
+    nargs = len(args) - 1
+    if nargs < 2 or len(sys.argv[1]) < 10:
+        print(f'Usage: {os.path.basename(sys.argv[0])} <YYYYMMDDHH> <days>')
+        sys.exit(1)
+    # ~~~~~~
+    CDATE = sys.argv[1]
+    MAX_DAYS = sys.argv[2]
+    lookback_hours =  int(MAX_DAYS) * 24  # days * 24 hours
+    dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
+    daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
+    plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_t.png')
+    plot_tseries(tseries, group='adpsfc_q', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_q.png')
+    plot_tseries(tseries, group='adpsfc_uv', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_uv.png')
+    plot_tseries(tseries, group='adpsfc_ps', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpsfc_ps.png')
+    #
+    plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_adpupa.png')
+    plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_aircar.png')
+    plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='tseries_obs_count_sfcshp.png')
