@@ -3,7 +3,6 @@
 #
 import sys
 import os
-import re
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
@@ -56,16 +55,15 @@ def read_obs_counts(CDATE, lookback_hours):
                 segments = all_lines[j].split()
                 obs = segments[0].strip()
                 if obs in tseries:
-                    tseries[obs]['n_ioda'][i]  = segments[1].strip()
-                    tseries[obs]['nobs'][i]    = segments[2].strip()
-                    tseries[obs]['nobs_r'][i]  = segments[3].strip()
+                    tseries[obs]['n_ioda'][i] = segments[1].strip()
+                    tseries[obs]['nobs'][i] = segments[2].strip()
+                    tseries[obs]['nobs_r'][i] = segments[3].strip()
                     tseries[obs]['n_loop1'][i] = segments[4].strip()
                     tseries[obs]['n_loop2'][i] = segments[5].strip()
                 else:
                     print(f'"{obs}" is NOT in the observers list')
     # ~~~~~~~~~~~~~~~~~~
     return dateBgn, tseries
-
 
 
 def plot_tseries(tseries, group, start_time, daterange, output_file=None):
@@ -85,12 +83,12 @@ def plot_tseries(tseries, group, start_time, daterange, output_file=None):
         raise ValueError(f"No observers found with prefix '{group}'")
 
     n_panels = len(subtypes)
-    #vars_to_plot = ['nobs', 'nobs_r', 'n_loop1', 'n_loop2']
-    #colors       = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-    #linestyles   = ['-',       '--',       '-.',       ':']
+    # vars_to_plot = ['nobs', 'nobs_r', 'n_loop1', 'n_loop2']
+    # colors       = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    # linestyles   = ['-',       '--',       '-.',       ':']
     vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
-    colors       = ['#1f77b4', '#ff7f0e', '#2ca02c']
-    linestyles   = ['-',       '--',       '-.']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    linestyles = ['-',       '--',       '-.']
 
     # --- build time axis ---
     first_obs = subtypes[0]
@@ -120,8 +118,6 @@ def plot_tseries(tseries, group, start_time, daterange, output_file=None):
                         linewidth=1.2, alpha=0.85)
                 has_data = True
 
-        #ax.set_ylabel(obs, fontsize=8, rotation=0,
-        #              labelpad=90, va='center')
         ax.text(0.02, 0.98, obs, transform=ax.transAxes, fontsize=8, rotation=0, va='top', ha='left')
         ax.tick_params(axis='both', labelsize=8)
         ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.5)
@@ -161,7 +157,7 @@ def plot_tseries(tseries, group, start_time, daterange, output_file=None):
 # !!  MAIN starts here !!
 # ***********************************************************************
 if __name__ == '__main__':
-    # 
+    #
     args = sys.argv
     nargs = len(args) - 1
     if nargs < 2 or len(sys.argv[1]) < 10:
@@ -170,7 +166,7 @@ if __name__ == '__main__':
     # ~~~~~~
     CDATE = sys.argv[1]
     MAX_DAYS = sys.argv[2]
-    lookback_hours =  int(MAX_DAYS) * 24  # days * 24 hours
+    lookback_hours = int(MAX_DAYS) * 24  # days * 24 hours
     dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
     daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
     plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_t.png')
