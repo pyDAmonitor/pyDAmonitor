@@ -25,14 +25,14 @@ if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
   export WORKDIR=${COMOUT}/pyDAmonitor_spinup/${WGF}
   export JEDI_DIR=${COMOUT}/jedivar_spinup/${WGF}
   export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana_spinup/${WGF}
-  export NONVAR_BUFR_LOG=${LOG_DIR}/rrfs_nonvar_bufrobs_spinup_${TAG}_${CDATE}.log
-  export NONVAR_REFL_LOG=${LOG_DIR}/rrfs_nonvar_reflobs_spinup_${TAG}_${CDATE}.log
+  export NONVAR_BUFR_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_bufrobs_spinup_*_${CDATE}.log)
+  export NONVAR_REFL_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_reflobs_spinup_*_${CDATE}.log)
 else
   export WORKDIR=${COMOUT}/pyDAmonitor/${WGF}
   export JEDI_DIR=${COMOUT}/jedivar/${WGF}
   export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana/${WGF}
-  export NONVAR_BUFR_LOG=${LOG_DIR}/rrfs_nonvar_bufrobs_${TAG}_${CDATE}.log
-  export NONVAR_REFL_LOG=${LOG_DIR}/rrfs_nonvar_reflobs_${TAG}_${CDATE}.log
+  export NONVAR_BUFR_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_bufrobs_*_${CDATE}.log)
+  export NONVAR_REFL_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_reflobs_*_${CDATE}.log)
 fi
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
