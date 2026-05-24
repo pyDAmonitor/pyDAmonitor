@@ -177,3 +177,5 @@ if __name__ == '__main__':
     plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpupa.png')
     plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_aircar.png')
     plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')
+    #
+    # print(tseries['aircar_t133']['nobs_r'])  # for debugging only

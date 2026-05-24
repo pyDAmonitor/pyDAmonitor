@@ -19,6 +19,9 @@ def minimization_stats(data, fname, iOuterloop):
     start = -999
     end = -999
     exit_for = False
+    max_iter = -999
+    norm_reduction_target = -999
+    norm_reduction_final = -999
     for i, line in enumerate(data):
         if line.startswith("DRPCGMinimizer: max iter"):
             numbers = re.findall(r'\d+\.?\d*', line)
@@ -117,6 +120,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 pos += 1
         # ~~~~~~~~ nobs_r, right after "CostJo Observations:"
         pattern = rf"^{observer} nobs\b.*\bMin\b.*\bMax\b.*\bRMS\b"
+        pattern_no_obs = rf"^{observer}: No observations"
         while pos1 < len(loop1):
             line = loop1[pos1]
             if re.search(pattern, line):
@@ -125,28 +129,38 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 if dcKnt[observer]['is_BT']:
                     dcKnt[observer]['nobs_r_singleBT'] = str(int(int(numbers[0]) / int(dcKnt[observer]['n_vars'])))
                 break
+            elif re.search(pattern_no_obs, line):
+                dcKnt[observer]['nobs_r'] = 0
+                break
             else:
                 pos1 += 1
         # ~~~~~~~~~~
         # n_loop1, obserr, Jo/n_1
+        dcKnt[observer]['n_loop1'] = 0
+        dcKnt[observer]['Jo/n_1'] = 0
+        dcKnt[observer]['obserr'] = 0
         while pos2 < len(loop1):
             line = loop1[pos2]
             if f'CostJo   : Nonlinear Jo({observer}' in line:
-                numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer]['n_loop1'] = numbers[1]
-                dcKnt[observer]['Jo/n_1'] = numbers[2]
-                dcKnt[observer]['obserr'] = numbers[3]
+                if 'No Observations' not in line:
+                    numbers = re.findall(r'\d+\.?\d*(?:e[+-]?\d+)?', line.split('=', 1)[1], re.IGNORECASE)
+                    dcKnt[observer]['n_loop1'] = numbers[1]
+                    dcKnt[observer]['Jo/n_1'] = numbers[2]
+                    dcKnt[observer]['obserr'] = numbers[3]
                 break
             else:
                 pos2 += 1
         # ~~~~~~~~~~
         # n_loop2
+        dcKnt[observer]['n_loop2'] = 0
+        dcKnt[observer]['Jo/n_2'] = 0
         while pos3 < len(loop2):
             line = loop2[pos3]
             if f'CostJo   : Nonlinear Jo({observer}' in line:
-                numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
-                dcKnt[observer]['n_loop2'] = numbers[1]
-                dcKnt[observer]['Jo/n_2'] = numbers[2]
+                if 'No Observations' not in line:
+                    numbers = re.findall(r'\d+\.?\d*(?:e[+-]?\d+)?', line.split('=', 1)[1], re.IGNORECASE)
+                    dcKnt[observer]['n_loop2'] = numbers[1]
+                    dcKnt[observer]['Jo/n_2'] = numbers[2]
                 break
             else:
                 pos3 += 1
