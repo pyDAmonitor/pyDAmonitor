@@ -141,7 +141,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                     dcKnt[observer]['Jo/n_1'] = 0
                     dcKnt[observer]['obserr'] = 0
                 else:
-                    numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
+                    numbers = re.findall(r'\d+\.?\d*(?:e[+-]?\d+)?', line.split('=', 1)[1], re.IGNORECASE)
                     dcKnt[observer]['n_loop1'] = numbers[1]
                     dcKnt[observer]['Jo/n_1'] = numbers[2]
                     dcKnt[observer]['obserr'] = numbers[3]
@@ -157,7 +157,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                     dcKnt[observer]['n_loop2'] = 0
                     dcKnt[observer]['Jo/n_2'] = 0
                 else:
-                    numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
+                    numbers = re.findall(r'\d+\.?\d*(?:e[+-]?\d+)?', line.split('=', 1)[1], re.IGNORECASE)
                     dcKnt[observer]['n_loop2'] = numbers[1]
                     dcKnt[observer]['Jo/n_2'] = numbers[2]
                 break
