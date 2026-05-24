@@ -3,13 +3,13 @@
 # pyDAmonitor
 Safeguarding invaluable DA investments by vigilantly monitoring DA performance both in real-time and retrospective scenarios.
 
-# Installation
+# Install the `pyDAmonitor` conda environment when needed
 ```
 git clone https://github.com/pyDAmonitor/pyDAmonitor.git
 conda env create -f pyDAmonitor/environment.yaml
 conda activate pyDAmonitor
 ```
-Note: The `pyDAmonitor` Python environment is already installed on `Jet/Hera/Ursa/Gaea/Orion/Hercules/Derecho` and can be loaded with `source pyDAmonitor/ush/load_pyDAmonitor.sh`.  
+Note: The `pyDAmonitor` Python environment is already installed on `Hera/Ursa/Gaea/Orion/Hercules/Derecho` and can be loaded with `source pyDAmonitor/ush/load_pyDAmonitor.sh`.  
 Sample data is also staged on these machines for a quick start. If you need the sample data on other platforms, feel free to reach out.
 
 # Details
