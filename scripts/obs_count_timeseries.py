@@ -43,7 +43,6 @@ def read_obs_counts(CDATE, lookback_hours):
         PDY = datetime.strftime(dateCur, "%Y%m%d")
         cyc = datetime.strftime(dateCur, "%H")
         mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/obs_count.txt'
-        print(mypath)
         if os.path.exists(mypath):
             # read all lines of obs_counts.txt
             all_lines = []
