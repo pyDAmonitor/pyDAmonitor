@@ -43,6 +43,7 @@ def read_obs_counts(CDATE, lookback_hours):
         PDY = datetime.strftime(dateCur, "%Y%m%d")
         cyc = datetime.strftime(dateCur, "%H")
         mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/obs_count.txt'
+        print(mypath)
         if os.path.exists(mypath):
             # read all lines of obs_counts.txt
             all_lines = []
@@ -177,3 +178,5 @@ if __name__ == '__main__':
     plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpupa.png')
     plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_aircar.png')
     plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')
+    #
+    # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
