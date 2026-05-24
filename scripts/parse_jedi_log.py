@@ -120,7 +120,7 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 pos += 1
         # ~~~~~~~~ nobs_r, right after "CostJo Observations:"
         pattern = rf"^{observer} nobs\b.*\bMin\b.*\bMax\b.*\bRMS\b"
-        dcKnt[observer]['nobs_r'] = 0
+        pattern_no_obs = rf"^{observer}: No observations"
         while pos1 < len(loop1):
             line = loop1[pos1]
             if re.search(pattern, line):
@@ -128,6 +128,9 @@ def obs_counts(fname, pre_loop, loop1, loop2, oma):
                 dcKnt[observer]['nobs_r'] = numbers[0]
                 if dcKnt[observer]['is_BT']:
                     dcKnt[observer]['nobs_r_singleBT'] = str(int(int(numbers[0]) / int(dcKnt[observer]['n_vars'])))
+                break
+            elif re.search(pattern_no_obs, line):
+                dcKnt[observer]['nobs_r'] = 0
                 break
             else:
                 pos1 += 1
