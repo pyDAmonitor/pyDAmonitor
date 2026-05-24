@@ -62,6 +62,7 @@ ln -snf ${PYDAMONITOR}/scripts/obs_count_timeseries.py .
 ./obs_count_timeseries.py ${CDATE} 10  # plot 10 days of obs counts
 #
 #
+touch pyDAmonitor.done
 date
 echo "pyDAmonitor HAS COMPLETED NORMALLY!"
 exit 0
