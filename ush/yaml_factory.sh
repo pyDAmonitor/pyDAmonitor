@@ -29,4 +29,17 @@ source ${run_dir}/load_pyDAmonitor.sh
 echo "create a new branch 'update' to keep the main branch intact"
 git checkout -b update
 git branch
-ush/guide.sh
+
+# updates to match the latest workflow super YAML files
+echo "updates to match the latest workflow super YAML files"
+cd factory
+./copy_from_workflow.sh
+export YT_DEDENT=fase
+export YT_SPLIT_LEVEL=1
+./yth jedivar.yaml split
+git add .
+git commit -m "updates to match the latest workflow super YAML files"
+echo -e "\ncurrent directory is: $(pwd)"
+
+# further guidance
+../ush/guide.sh
