@@ -11,8 +11,16 @@ def main():
 
     print('read minimization file=', mfile)
 
-    total_rows = sum(1 for line in open(mfile))
-    half_rows = total_rows // 2 - 3
+    blank_line_numbers = []
+    with open(mfile, 'r') as f:
+        for i, line in enumerate(f):
+            if not line.strip():  # checks if the line is empty or just whitespace
+                blank_line_numbers.append(i)
+
+    print('first blank line found:', blank_line_numbers[0])
+
+    half_rows = blank_line_numbers[0] - 2
+
     print(half_rows)
     data1 = pd.read_csv(mfile, header=1, skipinitialspace=True, nrows=half_rows, sep=' ')
 
