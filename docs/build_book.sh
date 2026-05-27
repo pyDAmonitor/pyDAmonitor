@@ -13,11 +13,15 @@ save_origin=$(git remote get-url origin)
 #
 # get the repo url of the book remote
 book_repo=$(git remote get-url book)
-if [[ "${book_repo}" ==  *"pyDAmonitor/pyDAmonitor" ]]; then
-      echo "ERROR: the 'book' remote tracks the authoritative repository:"
-      echo "  ${book_repo}"
-      echo "users can ONLY push books to their own forks"
-      exit 1
+if [[ -z "${book_repo}" ]]; then
+  echo "add a 'book' remote as follows"
+  echo "  git remote add book git@github.com:guoqing-noaa/mybook"
+  exit 1
+elif [[ "${book_repo}" ==  *"pyDAmonitor/pyDAmonitor" ]]; then
+  echo "ERROR: the 'book' remote tracks the authoritative repository:"
+  echo "  ${book_repo}"
+  echo "users can ONLY push books to their own forks"
+  exit 1
 fi
 
 set -x
