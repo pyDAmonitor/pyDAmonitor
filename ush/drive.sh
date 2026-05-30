@@ -61,6 +61,10 @@ ln -snf ${PYDAMONITOR}/scripts/costgrad_descent.py .
 ln -snf ${PYDAMONITOR}/scripts/obs_count_timeseries.py .
 ./obs_count_timeseries.py ${CDATE} 10  # plot 10 days of obs counts
 #
+# prep files for web
+ln -snf ${PYDAMONITOR}/ush/prep_web.sh .
+./prep_web.sh
+#
 #
 touch pyDAmonitor.done
 date
