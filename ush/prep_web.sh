@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# link all files needed by the webpage into web/ 
+# prep all files needed by the webpage
 declare -rx PS4='+${SECONDS}s $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}]${id}: '
 set -x
 
