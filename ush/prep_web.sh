@@ -6,6 +6,7 @@ set -x
 mkdir -p web
 cd web
 sed -e "s/2024050600/${PDY}${cyc}/g" ${PYDAMONITOR}/ush/index.html_cycle > index.html
+cp ${PYDAMONITOR}/ush/yaml_peek.html .
 mv ../*.png .
 mv ../*.txt .
 cp -L ../log.*out .

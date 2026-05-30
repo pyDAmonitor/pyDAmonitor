@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YAML Peek</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #fff; color: #222; }
+    h1 { font-size: 1.1em; color: #333; margin-bottom: 4px; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    button {
+      background: #f5f5f5; color: #333; border: 1px solid #ccc;
+      padding: 5px 12px; cursor: pointer; border-radius: 4px; font-family: monospace;
+    }
+    button:hover { background: #e8e8e8; border-color: #999; color: #000; }
+    button.active { background: #0078d4; border-color: #0078d4; color: #fff; }
+    pre {
+      background: #f9f9f9; border: 1px solid #ddd; padding: 16px;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+      font-size: 0.85em; line-height: 1.5; border-radius: 4px;
+      max-height: 70vh; overflow-y: auto;
+    }
+    .error { color: #cc0000; }
+  </style>
+</head>
+<body>
+
+<h1 id="title">YAML Peek</h1>
+<div class="btn-row" id="btn-row"></div>
+<pre id="content"></pre>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const file = params.get('file');
+
+  if (!file) {
+    document.getElementById('title').innerHTML =
+      '<span class="error">No file specified. Use ?file=jedivar.yaml</span>';
+  } else {
+    loadYaml(file);
+  }
+
+  async function loadYaml(file) {
+    let text;
+    try {
+      text = await fetch(file).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.text();
+      });
+    } catch (e) {
+      document.getElementById('title').innerHTML =
+        `<span class="error">Failed to load ${file}: ${e.message}</span>`;
+      return;
+    }
+
+    const lines = text.split('\n');
+
+    // --- Find header end: first line that starts with "observers:" (stripped) ---
+    let headerEndIdx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith('observers:')) {
+        headerEndIdx = i; // include up to (not including) this line
+        break;
+      }
+    }
+
+    // --- Find each observer start: lines with "- obs space:" ---
+    const observers = []; // { name, startIdx }
+    let inObsSpace = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('- obs space:')) {
+        inObsSpace = true;
+        observers.push({ name: null, startIdx: i });
+        continue;
+      }
+      if (inObsSpace && lines[i].trim().startsWith('name:')) {
+        observers[observers.length - 1].name = lines[i].trim().replace('name:', '').trim();
+        inObsSpace = false;
+      }
+    }
+
+    // --- Build sections ---
+    // Header section: line 0 to headerEndIdx (exclusive)
+    const sections = [
+      { label: 'Header', startIdx: 0, endIdx: headerEndIdx }
+    ];
+    // Each observer: from its startIdx to next observer's startIdx (or end of file)
+    for (let i = 0; i < observers.length; i++) {
+      sections.push({
+        label: observers[i].name ?? `observer_${i + 1}`,
+        startIdx: observers[i].startIdx,
+        endIdx: observers[i + 1]?.startIdx ?? lines.length
+      });
+    }
+
+    // --- Summary ---
+    document.getElementById('title').innerHTML =
+      `YAML Peek — ${file} (${observers.length} observer${observers.length !== 1 ? 's' : ''} found)`;
+
+    // --- Buttons ---
+    const btnRow = document.getElementById('btn-row');
+    const contentEl = document.getElementById('content');
+    let activeBtn = null;
+
+    sections.forEach((section, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = section.label;
+      btn.onclick = () => {
+        const sectionLines = lines.slice(section.startIdx, section.endIdx);
+        contentEl.textContent = sectionLines.join('\n').trim();
+
+        if (activeBtn) activeBtn.classList.remove('active');
+        btn.classList.add('active');
+        activeBtn = btn;
+      };
+      btnRow.appendChild(btn);
+
+      // Auto-show Header on load
+      if (idx === 0) btn.click();
+    });
+  }
+</script>
+</body>
+</html>
