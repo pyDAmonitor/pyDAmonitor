@@ -1,7 +1,9 @@
+<!-- Developed by Guoqing Ge at noaa.gov -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="author" content="Guoqing Ge, CIRES@NOAA/GSL">
   <title>YAML Peek</title>
   <style>
     body { font-family: monospace; padding: 20px; background: #fff; color: #222; }
@@ -47,9 +49,23 @@
         return r.text();
       });
     } catch (e) {
-      document.getElementById('title').innerHTML =
-        `<span class="error">Failed to load ${file}: ${e.message}</span>`;
-      return;
+      if (file.startsWith('http')) {
+        try {
+          const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(file);
+          text = await fetch(proxyUrl).then(r => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.text();
+          });
+        } catch (e2) {
+          document.getElementById('title').innerHTML =
+            `<span class="error">Failed to load ${file} (also via CORS proxy): ${e2.message}</span>`;
+          return;
+        }
+      } else {
+        document.getElementById('title').innerHTML =
+          `<span class="error">Failed to load ${file}: ${e.message}</span>`;
+        return;
+      }
     }
 
     const lines = text.split('\n');
@@ -106,7 +122,7 @@
       btn.textContent = section.label;
       btn.onclick = () => {
         const sectionLines = lines.slice(section.startIdx, section.endIdx);
-        contentEl.textContent = sectionLines.join('\n').trim();
+        contentEl.textContent = sectionLines.join('\n');
 
         if (activeBtn) activeBtn.classList.remove('active');
         btn.classList.add('active');

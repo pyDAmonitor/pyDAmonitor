@@ -1,0 +1,256 @@
+<!-- Developed by Guoqing Ge at noaa.gov -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="Guoqing Ge, CIRES@NOAA/GSL">
+  <title>YAML Peek2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #fff; color: #222; height: 100vh; display: flex; flex-direction: column; }
+    h1 { font-size: 1.1em; color: #333; padding: 12px 20px 8px; }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar {
+      width: 160px; min-width: 140px; border-right: 1px solid #ddd;
+      overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .sidebar button {
+      text-align: left; width: 100%; background: #f5f5f5; color: #333;
+      border: 1px solid #ccc; padding: 6px 10px; cursor: pointer;
+      border-radius: 4px; font-family: monospace; font-size: 0.8em;
+      min-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sidebar button:hover { background: #e8e8e8; border-color: #999; }
+    .sidebar button.active { background: #0078d4; border-color: #0078d4; color: #fff; }
+    .right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .sub-btn-row {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px;
+      border-bottom: 1px solid #ddd; min-height: 38px; overflow-x: auto;
+    }
+    .sub-btn-row button {
+      background: #f5f5f5; color: #333; border: 1px solid #ccc;
+      padding: 4px 10px; cursor: pointer; border-radius: 4px;
+      font-family: monospace; font-size: 0.78em; white-space: nowrap;
+    }
+    .sub-btn-row button:hover { background: #e8e8e8; border-color: #999; }
+    .sub-btn-row button.active { background: #0078d4; border-color: #0078d4; color: #fff; }
+    pre {
+      flex: 1; background: #f9f9f9; border: none; padding: 16px;
+      overflow: auto; white-space: pre-wrap; word-break: break-word;
+      font-size: 0.85em; line-height: 1.5; margin: 0;
+    }
+    .error { color: #cc0000; }
+  </style>
+</head>
+<body>
+
+<h1 id="title">YAML Peek2</h1>
+<div class="main">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="right-panel">
+    <div class="sub-btn-row" id="sub-btn-row"></div>
+    <pre id="content"></pre>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const file = params.get('file');
+
+  if (!file) {
+    document.getElementById('title').innerHTML =
+      '<span class="error">No file specified. Use ?file=jedivar.yaml</span>';
+  } else {
+    loadYaml(file);
+  }
+
+  async function loadYaml(file) {
+    let text;
+    try {
+      text = await fetch(file).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.text();
+      });
+    } catch (e) {
+      if (file.startsWith('http')) {
+        try {
+          const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(file);
+          text = await fetch(proxyUrl).then(r => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.text();
+          });
+        } catch (e2) {
+          document.getElementById('title').innerHTML =
+            `<span class="error">Failed to load ${file} (also via CORS proxy): ${e2.message}</span>`;
+          return;
+        }
+      } else {
+        document.getElementById('title').innerHTML =
+          `<span class="error">Failed to load ${file}: ${e.message}</span>`;
+        return;
+      }
+    }
+
+    const lines = text.split('\n');
+
+    // --- Find header end: first line that starts with "observers:" (trimmed) ---
+    let headerEndIdx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith('observers:')) {
+        headerEndIdx = i;
+        break;
+      }
+    }
+
+    // --- Find each observer start: lines with "- obs space:" ---
+    const observers = []; // { name, startIdx }
+    let inObsSpace = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('- obs space:')) {
+        inObsSpace = true;
+        observers.push({ name: null, startIdx: i });
+        continue;
+      }
+      if (inObsSpace && lines[i].trim().startsWith('name:')) {
+        observers[observers.length - 1].name = lines[i].trim().replace('name:', '').trim();
+        inObsSpace = false;
+      }
+    }
+
+    // --- Build top-level sections ---
+    const sections = [
+      { label: 'Header', startIdx: 0, endIdx: headerEndIdx, type: 'header' }
+    ];
+    for (let i = 0; i < observers.length; i++) {
+      sections.push({
+        label: observers[i].name ?? `observer_${i + 1}`,
+        startIdx: observers[i].startIdx,
+        endIdx: observers[i + 1]?.startIdx ?? lines.length,
+        type: 'observer'
+      });
+    }
+
+    // --- Parse filters within an observer section ---
+    function parseObserverSubs(startIdx, endIdx) {
+      const subs = [];
+
+      // Find obs_header end: line immediately before a line ending with "filters:" (trimmed)
+      let obsHeaderEnd = endIdx;
+      for (let i = startIdx; i < endIdx; i++) {
+        if (lines[i].trim().endsWith('filters:')) {
+          obsHeaderEnd = i;
+          break;
+        }
+      }
+      subs.push({ label: 'obs_header', startIdx: startIdx, endIdx: obsHeaderEnd });
+
+      // Find filter boundaries
+      const filterStarts = []; // { idx, name }
+      for (let i = startIdx; i < endIdx; i++) {
+        const trimmed = lines[i].trim();
+        if (trimmed.startsWith('- filter:')) {
+          const name = trimmed.replace('- filter:', '').trim();
+          filterStarts.push({ idx: i, name: name });
+        }
+      }
+
+      // Build filter sections with comment adjustment
+      for (let f = 0; f < filterStarts.length; f++) {
+        const rawStart = filterStarts[f].idx;
+        const rawEnd = filterStarts[f + 1]?.idx ?? endIdx;
+
+        // Output start: go back from rawStart to include adjacent comment lines
+        let outputStart = rawStart;
+        for (let j = rawStart - 1; j >= (f > 0 ? filterStarts[f - 1].idx : startIdx); j--) {
+          if (lines[j].trim().startsWith('#')) {
+            outputStart = j;
+          } else {
+            break;
+          }
+        }
+
+        // Output end: go back from rawEnd to exclude trailing comment lines
+        let outputEnd = rawEnd;
+        for (let j = rawEnd - 1; j > rawStart; j--) {
+          if (lines[j].trim().startsWith('#')) {
+            outputEnd = j;
+          } else {
+            break;
+          }
+        }
+
+        const num = String(f).padStart(2, '0');
+        subs.push({
+          label: `filter_${num}_${filterStarts[f].name}`,
+          startIdx: outputStart,
+          endIdx: outputEnd
+        });
+      }
+
+      return subs;
+    }
+
+    // --- Summary ---
+    document.getElementById('title').innerHTML =
+      `YAML Peek2 — ${file} (${observers.length} observer${observers.length !== 1 ? 's' : ''} found)`;
+
+    // --- Sidebar buttons ---
+    const sidebar = document.getElementById('sidebar');
+    const subBtnRow = document.getElementById('sub-btn-row');
+    const contentEl = document.getElementById('content');
+    let activeSideBtn = null;
+    let activeSubBtn = null;
+
+    function showContent(startIdx, endIdx) {
+      const sectionLines = lines.slice(startIdx, endIdx);
+      contentEl.textContent = sectionLines.join('\n');
+    }
+
+    function clearSubButtons() {
+      subBtnRow.innerHTML = '';
+      activeSubBtn = null;
+    }
+
+    function renderSubButtons(subs) {
+      clearSubButtons();
+      subs.forEach((sub, idx) => {
+        const btn = document.createElement('button');
+        btn.textContent = sub.label;
+        btn.title = sub.label;
+        btn.onclick = () => {
+          showContent(sub.startIdx, sub.endIdx);
+          if (activeSubBtn) activeSubBtn.classList.remove('active');
+          btn.classList.add('active');
+          activeSubBtn = btn;
+        };
+        subBtnRow.appendChild(btn);
+        if (idx === 0) btn.click();
+      });
+    }
+
+    sections.forEach((section, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = section.label;
+      btn.title = section.label;
+      btn.onclick = () => {
+        if (activeSideBtn) activeSideBtn.classList.remove('active');
+        btn.classList.add('active');
+        activeSideBtn = btn;
+
+        if (section.type === 'header') {
+          clearSubButtons();
+          showContent(section.startIdx, section.endIdx);
+        } else {
+          const subs = parseObserverSubs(section.startIdx, section.endIdx);
+          renderSubButtons(subs);
+        }
+      };
+      sidebar.appendChild(btn);
+
+      // Auto-show Header on load
+      if (idx === 0) btn.click();
+    });
+  }
+</script>
+</body>
+</html>
