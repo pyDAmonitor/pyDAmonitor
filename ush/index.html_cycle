@@ -308,7 +308,7 @@
               <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3z"/><polyline points="10,2 10,5 13,5"/><line x1="5" y1="8" x2="7" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
               jedivar.yaml
             </a>
-            <a href="yaml_peek.html?file=jedivar.yaml" target="_blank"><button>@obs</button></a>
+            <a href="../yaml_peek.html?file=2024050600/jedivar.yaml" target="_blank"><button>@obs</button></a>
           </div>
         </div>
         <div>
@@ -317,7 +317,7 @@
               <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3z"/><polyline points="10,2 10,5 13,5"/><line x1="5" y1="8" x2="7" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
               jedivar.pass2.yaml
             </a>
-            <a href="yaml_peek.html?file=jedivar.pass2.yaml" target="_blank"><button>@obs</button></a>
+            <a href="../yaml_peek.html?file=2024050600/jedivar.pass2.yaml" target="_blank"><button>@obs</button></a>
           </div>
         </div>
         <a class="link-card" href="log.out" target="_blank" style="flex:0.7;">
