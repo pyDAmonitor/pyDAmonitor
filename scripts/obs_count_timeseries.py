@@ -26,7 +26,6 @@ observers = [
 ]
 obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
 
-
 def read_obs_counts(CDATE, lookback_hours):
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
@@ -53,6 +52,58 @@ def read_obs_counts(CDATE, lookback_hours):
                     if line.strip():
                         all_lines.append(line.strip())
             # update corresponding observers
+            for j in range(1, len(all_lines)):
+                segments = all_lines[j].split()
+                obs = segments[0].strip()
+                if obs in tseries:
+                    tseries[obs]['n_ioda'][i] = segments[1].strip()
+                    tseries[obs]['nobs'][i] = segments[2].strip()
+                    tseries[obs]['nobs_r'][i] = segments[3].strip()
+                    tseries[obs]['n_loop1'][i] = segments[4].strip()
+                    tseries[obs]['n_loop2'][i] = segments[5].strip()
+                else:
+                    print(f'"{obs}" is NOT in the observers list')
+    # ~~~~~~~~~~~~~~~~~~
+    return dateBgn, tseries
+
+
+def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
+    
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
+    dateBgn = dateEnd - timedelta(hours=lookback_hours)
+
+    # There environment variables should already be defined in the shell
+    MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
+    WGF = os.getenv('WGF', 'WGF_not_defined')
+    RUN = os.getenv('RUN', 'RUN_not_defined')
+
+    #
+    # set default values to np.nan for each cycle
+    tseries = {
+        'nonvar_satellite': {'GOES_EAST': [np.nan] * (lookback_hours + 1)},
+        'nonvar_satellite': {'GOES_WEST': [np.nan] * (lookback_hours + 1)},
+        'nonvar_metar': {'read': [np.nan] * (lookback_hours + 1)},
+        'nonvar_lightning': {'read': [np.nan] * (lookback_hours + 1)},
+        'nonvar_refl': {'max': [np.nan] * (lookback_hours + 1)}
+    }
+
+    # Loop over each cycle
+    for i in range(lookback_hours+1):
+        dateCur = dateBgn + timedelta(hours=i)
+        PDY = datetime.strftime(dateCur, "%Y%m%d")
+        cyc = datetime.strftime(dateCur, "%H")
+        mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/nonvar_cloud_out.txt'
+        if not os.path.exists(mypath):
+            mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/web/nonvar_cloud_out.txt'
+        if os.path.exists(mypath):
+            # read all lines of nonvar_cloud_out.txt
+            all_lines = []
+            with open(mypath, 'r') as infile:
+                for line in infile:
+                    if line.strip():
+                        all_lines.append(line.strip())
+            # update corresponding observers
+            # SSM: NEEDS TO BE UPDATED!!!
             for j in range(1, len(all_lines)):
                 segments = all_lines[j].split()
                 obs = segments[0].strip()
