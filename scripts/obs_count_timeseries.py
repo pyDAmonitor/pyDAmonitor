@@ -26,6 +26,7 @@ observers = [
 ]
 obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
 
+
 def read_obs_counts(CDATE, lookback_hours):
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
@@ -70,17 +71,17 @@ def read_obs_counts(CDATE, lookback_hours):
 def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     """
     Read nonvar cloud analysis obs counts from nonvar_cloud_out.txt files.
-    
+
     Parameters
     ----------
     CDATE : string
         Current cycle in YYYYMMDDHH format
     lookback_hours : integer
         Number of hours to look back for the time series
-    
+
     Returns
     -------
-    dateBgn : datetime 
+    dateBgn : datetime
         Start of the time series
     tseries  : dict
         Nested dictionary with obs counts for each group and subtype
@@ -105,10 +106,10 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     #
     # Match observation with each ingest program
     obs_map = {
-        'GOES_EAST': 'nonvar_satellite', 
+        'GOES_EAST': 'nonvar_satellite',
         'GOES_WEST': 'nonvar_satellite',
-        'raw_METAR': 'nonvar_metar', 
-        'raw_lightning': 'nonvar_lightning', 
+        'raw_METAR': 'nonvar_metar',
+        'raw_lightning': 'nonvar_lightning',
         'max_val': 'nonvar_refl'
     }
     #
@@ -132,9 +133,9 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
                 obs = all_lines[j].split()[1].strip()
                 for key in obs_map:
                     if obs == key:
-                         group = obs_map[key]
-                         tseries[group][obs][i] = all_lines[j].split()[2].strip()
-                         break
+                        group = obs_map[key]
+                        tseries[group][obs][i] = all_lines[j].split()[2].strip()
+                        break
     #
     # Rename refl max_val field
     tseries['nonvar_refl']['max_dbz_val'] = tseries['nonvar_refl'].pop('max_val')
