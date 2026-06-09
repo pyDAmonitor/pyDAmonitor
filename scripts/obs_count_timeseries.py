@@ -68,15 +68,31 @@ def read_obs_counts(CDATE, lookback_hours):
 
 
 def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
+    """
+    Read nonvar cloud analysis obs counts from nonvar_cloud_out.txt files.
     
+    Parameters
+    ----------
+    CDATE : string
+        Current cycle in YYYYMMDDHH format
+    lookback_hours : integer
+        Number of hours to look back for the time series
+    
+    Returns
+    -------
+    dateBgn : datetime 
+        Start of the time series
+    tseries  : dict
+        Nested dictionary with obs counts for each group and subtype
+    """
+    #
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
-
+    #
     # There environment variables should already be defined in the shell
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
     WGF = os.getenv('WGF', 'WGF_not_defined')
     RUN = os.getenv('RUN', 'RUN_not_defined')
-
     #
     # set default values to np.nan for each cycle
     tseries = {
@@ -86,7 +102,16 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
         'nonvar_lightning': {'read': [np.nan] * (lookback_hours + 1)},
         'nonvar_refl': {'max': [np.nan] * (lookback_hours + 1)}
     }
-
+    #
+    # Match observation with each ingest program
+    obs_map = {
+        'GOES_EAST': 'nonvar_satellite', 
+        'GOES_WEST': 'nonvar_satellite',
+        'raw_METAR': 'nonvar_metar', 
+        'raw_lightning': 'nonvar_lightning', 
+        'max_val': 'nonvar_refl'
+    }
+    #
     # Loop over each cycle
     for i in range(lookback_hours+1):
         dateCur = dateBgn + timedelta(hours=i)
@@ -102,19 +127,14 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
                 for line in infile:
                     if line.strip():
                         all_lines.append(line.strip())
-            # update corresponding observers
-            # SSM: NEEDS TO BE UPDATED!!!
+            # extract fields from nonvar cloud analysis output file
             for j in range(1, len(all_lines)):
-                segments = all_lines[j].split()
-                obs = segments[0].strip()
-                if obs in tseries:
-                    tseries[obs]['n_ioda'][i] = segments[1].strip()
-                    tseries[obs]['nobs'][i] = segments[2].strip()
-                    tseries[obs]['nobs_r'][i] = segments[3].strip()
-                    tseries[obs]['n_loop1'][i] = segments[4].strip()
-                    tseries[obs]['n_loop2'][i] = segments[5].strip()
-                else:
-                    print(f'"{obs}" is NOT in the observers list')
+                obs = all_lines[j].split()[1].strip()
+                for key in obs_map:
+                    if obs == key:
+                         group = obs_map[key]
+                         tseries[group][obs][i] = all_lines[j].split()[2].strip()
+                         break
     # ~~~~~~~~~~~~~~~~~~
     return dateBgn, tseries
 
@@ -220,6 +240,8 @@ if __name__ == '__main__':
     CDATE = sys.argv[1]
     MAX_DAYS = sys.argv[2]
     lookback_hours = int(MAX_DAYS) * 24  # days * 24 hours
+    #
+    # JEDI obs
     dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
     daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
     plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_t.png')
@@ -232,3 +254,11 @@ if __name__ == '__main__':
     plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')
     #
     # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
+    #
+    # Nonvar cloud analysis obs
+    dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
+    plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_nonvar_satellite.png')
+    plot_tseries(tseries, group='nonvar_metar', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_nonvar_metar.png')
+    plot_tseries(tseries, group='nonvar_lightning', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_nonvar_lightning.png')
+    plot_tseries(tseries, group='nonvar_refl', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_nonvar_refl.png')
+    
