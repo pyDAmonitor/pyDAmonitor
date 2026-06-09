@@ -248,15 +248,6 @@ if __name__ == '__main__':
     MAX_DAYS = sys.argv[2]
     lookback_hours = int(MAX_DAYS) * 24  # days * 24 hours
     #
-    # Nonvar cloud analysis obs. # DEBUG. Move to after JEDI obs after debugging
-    dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
-    daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
-    print('Creating plots for nonvar cloud analysis') # DEBUG
-    plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_satellite.png')
-    plot_tseries(tseries, group='nonvar_metar', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_metar.png')
-    plot_tseries(tseries, group='nonvar_lightning', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_lightning.png')
-    plot_tseries(tseries, group='nonvar_refl', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_refl.png')
-    #
     # JEDI obs
     dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
     daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
@@ -271,4 +262,9 @@ if __name__ == '__main__':
     #
     # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
     #
-    
+    # Nonvar cloud analysis obs
+    dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
+    plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_satellite.png')
+    plot_tseries(tseries, group='nonvar_metar', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_metar.png')
+    plot_tseries(tseries, group='nonvar_lightning', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_lightning.png')
+    plot_tseries(tseries, group='nonvar_refl', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_refl.png')
