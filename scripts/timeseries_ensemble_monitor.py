@@ -159,7 +159,7 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
     axes[0].plot(df.index, df['crps_median'], color=c_secondary, linestyle='--', linewidth=1.8, label="Spatial Median")
     axes[0].plot(df.index, df['crps_mean'], color=c_primary, linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Spatial Mean")
 
-    axes[0].set_ylabel(f"CRPS", fontsize=12)
+    axes[0].set_ylabel("CRPS", fontsize=12)
     axes[0].set_title(f"CRPS Performance Tracking | Observer: {obs_label} ({actual_varname}) | {daterange_str}", fontsize=13, fontweight='bold')
     axes[0].grid(True, linestyle=':', alpha=0.5)
     axes[0].legend(loc='upper left', ncol=2, framealpha=0.9)
@@ -223,12 +223,13 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
 # ==========================================
 if __name__ == '__main__':
 
+
     # Input argument check
     args = sys.argv
     nargs = len(args) - 1
     if nargs < 2 or len(sys.argv[1]) < 10:
         print(f'Usage: {os.path.basename(sys.argv[0])} <YYYYMMDDHH> <days>')
-        print(f'Example: ./timeseries_ensemble_monitor.py 2026052212 7')
+        print('Example: ./timeseries_ensemble_monitor.py 2026052212 7')
         sys.exit(1)
 
     CDATE = sys.argv[1]
@@ -237,8 +238,8 @@ if __name__ == '__main__':
 
     # Extract Environment variables matching your operational setup
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
-    WGF         = os.getenv('WGF', 'WGF_not_defined')
-    RUN         = os.getenv('RUN', 'RUN_not_defined')
+    WGF = os.getenv('WGF', 'WGF_not_defined')
+    RUN = os.getenv('RUN', 'RUN_not_defined')
 
     # Calculate real-time target window bounds
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
@@ -300,7 +301,7 @@ if __name__ == '__main__':
 
             # Save separate tracking file for each wind component
             output_filename = f'rt_monitor_{obs}_{varname}_{daterange_str}.png'
- 
+
             plot_rt_diagnostics(df_results, obs, varname, daterange_str, output_file=output_filename)
 
     print("\nAll real-time observer monitoring updates processed successfully.")
