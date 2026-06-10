@@ -221,8 +221,9 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
 # ==========================================
 # 4. MAIN REAL-TIME EXECUTION BLOCK
 # ==========================================
-if __name__ == '__main__':
 
+
+if __name__ == '__main__':
 
     # Input argument check
     args = sys.argv
