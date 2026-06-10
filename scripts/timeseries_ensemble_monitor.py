@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Real-time Ensemble Forecast Diagnostic Tool
+Real-time Ensemble Forecast Diagnostic Tool for DA Monitoring
 Usage: ./timeseries_ensemble_monitor.py <YYYYMMDDHH> <days>
 """
 
@@ -17,39 +17,44 @@ from datetime import datetime, timedelta
 # ==========================================
 # 1. REAL-TIME ENVIRONMENT & CONFIGURATION
 # ==========================================
-# Preset variable and file template configurations
-TASK = "getkf_observer"
 num_members = 30  
 
-# Fetch production paths from environment variables or use fallbacks
-EXP_PATH = os.getenv('RT_EXP_PATH', '/gpfs/f6/wrfruc/scratch/Sijie.Pan/retros')
-EXP_NAME = os.getenv('RT_EXP_NAME', 'RRFSv2X_sfcfix3')
-VERSION  = os.getenv('RT_VERSION',  '2.1.3')
+# Operational Observers list to iterate over dynamically
+observers = [
+    # adpsfc ----
+    'adpsfc_t181', 'adpsfc_t183', 'adpsfc_t187', 'adpsfc_q181', 'adpsfc_q183', 'adpsfc_q187',
+    'adpsfc_ps181', 'adpsfc_ps187', 'adpsfc_uv281', 'adpsfc_uv284', 'adpsfc_uv287',
+    # adpupa ----
+    'adpupa_t120', 'adpupa_q120', 'adpupa_ps120', 'adpupa_uv220',
+    # aircar ----
+    'aircar_t133', 'aircar_q133', 'aircar_uv233',
+    # sfcshp ----
+    'sfcshp_t180', 'sfcshp_t183', 'sfcshp_q180', 'sfcshp_q183',
+    'sfcshp_ps180', 'sfcshp_uv280', 'sfcshp_uv282', 'sfcshp_uv284',
+]
 
-# Core verification metric keys
+# Clean Dictionary Mapping with Lists as Values (Handles multiple fields under 'uv')
+VAR_MAP = {
+    "t":  ["airTemperature"],
+    "q":  ["specificHumidity"],
+    "ps": ["stationPressure"],
+    "uv": ["windEastward", "windNorthward"] 
+}
+
+# Standard core verification metric tracking keys
 METRIC_KEYS = [
     'crps_mean', 'crps_median', 'crps_p25', 'crps_p75', 'crps_p5', 'crps_p95', 
     'rmse', 'spread', 'bias_index', 'rel_index'
 ]
 
-# Mapping full variable names to their diagnostic file short abbreviations
-VAR_ABBR_MAP = {
-    "airTemperature": "t",
-    "specificHumidity": "q",
-    "stationPressure": "ps",
-    "windEastward": "uv",
-    "windNorthward": "uv"
-}
-
 # ==========================================
 # 2. CORE DIAGNOSTIC FUNCTIONS
 # ==========================================
 
-def get_file_path(base_path, exp_name, version, date_str, hour_str, task_name, file_name):
-    """Generates the standardized operational directory and file path structure."""
+def get_file_path(base_path, run_name, pdy, cyc, wgf, file_name):
+    """Generates the file path exactly matching the operational environment structure."""
     return os.path.join(
-        base_path, exp_name, "com", "rrfs", f"v{version}",
-        f"rrfs.{date_str}", hour_str, task_name, "enkf", file_name
+        base_path, f"{run_name}.{pdy}", cyc, "pyDAmonitor", wgf, file_name
     )
 
 def compute_reliability_index(bin_counts, m_members, num_stations):
@@ -60,11 +65,7 @@ def compute_reliability_index(bin_counts, m_members, num_stations):
     return np.mean(np.abs(actual_freq - ideal_freq))
 
 def compute_directional_bias_index(bin_counts, num_stations):
-    """
-    Computes a normalized bias index bounded between [-1, 1].
-    Positive value (>0) indicates Overforecast.
-    Negative value (<0) indicates Underforecast.
-    """
+    """Computes a normalized directional bias index bounded between [-1, 1]."""
     if num_stations == 0: return np.nan
     half_len = len(bin_counts) // 2
     left_sum = np.sum(bin_counts[:half_len])
@@ -74,13 +75,11 @@ def compute_directional_bias_index(bin_counts, num_stations):
 def process_single_hour(file_path, v_name, m_members):
     """Reads a single real-time NetCDF cycle file and computes verification stats."""
     if not os.path.exists(file_path):
-        # Operational fallback: log warning and return NaN if a cycle file is delayed/missing
-        print(f"Warning: File missing -> {file_path}")
         return {k: np.nan for k in METRIC_KEYS}
     
     try:
         with Dataset(file_path, 'r') as nc:
-            # Extract observation array
+            # Look directly for the targeted internal variable
             if 'ObsValue' in nc.groups and v_name in nc.groups['ObsValue'].variables:
                 obs = nc.groups['ObsValue'].variables[v_name][:]
                 if hasattr(obs, 'mask'):
@@ -100,7 +99,7 @@ def process_single_hour(file_path, v_name, m_members):
                         member_val = np.ma.filled(member_val, np.nan)
                     fcst[:, m-1] = member_val
             
-            # Quality Control: Filter missing stations
+            # Quality Control: Filter out completely missing or masked stations
             valid_mask = ~np.isnan(obs) & ~np.isnan(fcst).any(axis=1)
             obs = obs[valid_mask]
             fcst = fcst[valid_mask]
@@ -136,36 +135,32 @@ def process_single_hour(file_path, v_name, m_members):
 # 3. PRODUCTION QUALITY 4-PANEL PLOTTER
 # ==========================================
 
-def plot_rt_diagnostics(df, v_name, obs_id, daterange_str, output_file=None):
-    """
-    Plots real-time dashboard tracking the 4 core ensemble metrics.
-    Streamlined layout optimized for single-experiment monitoring.
-    """
+def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_file=None):
+    """Plots real-time dashboard tracking the 4 core ensemble metrics for an observer."""
     fig, axes = plt.subplots(4, 1, figsize=(14, 20), sharex=True)
     
-    # Palette optimized for clear visibility on single-line real-time monitors
     c_primary = '#1f77b4'      # Main mean line (Deep Blue)
     c_secondary = '#2ca02c'    # Median tracker (Green)
     c_edge = '#aec7e8'         # Extreme bounds (Light Blue)
     c_core = '#98df8a'         # Interquartile range (Light Green)
     
     # -----------------------------------------------------------------
-    # Panel 1: Continuous Ranked Probability Score (CRPS)
+    # Panel 1: CRPS
     # -----------------------------------------------------------------
     axes[0].fill_between(df.index, df['crps_p5'], df['crps_p95'], color=c_edge, alpha=0.2, label="Spatial Extremes (5%-95%)")
     axes[0].fill_between(df.index, df['crps_p25'], df['crps_p75'], color=c_core, alpha=0.4, label="Spatial Core (25%-75%)")
     axes[0].plot(df.index, df['crps_median'], color=c_secondary, linestyle='--', linewidth=1.8, label="Spatial Median")
-    axes[0].plot(df.index, df['crps_mean'], color=c_primary, linestyle='-', linewidth=2.5, label="Spatial Mean")
+    axes[0].plot(df.index, df['crps_mean'], color=c_primary, linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Spatial Mean")
     
-    axes[0].set_ylabel(f"CRPS ({varname})", fontsize=12)
-    axes[0].set_title(f"CRPS Stream | Variable: {v_name} (Type {obs_id}) | {daterange_str}", fontsize=13, fontweight='bold')
+    axes[0].set_ylabel(f"CRPS", fontsize=12)
+    axes[0].set_title(f"CRPS Performance Tracking | Observer: {obs_label} ({actual_varname}) | {daterange_str}", fontsize=13, fontweight='bold')
     axes[0].grid(True, linestyle=':', alpha=0.5)
     axes[0].legend(loc='upper left', ncol=2, framealpha=0.9)
 
     # -----------------------------------------------------------------
     # Panel 2: Reliability Index
     # -----------------------------------------------------------------
-    axes[1].plot(df.index, df['rel_index'], color=c_primary, linestyle='-', linewidth=2.2, label="Reliability Index")
+    axes[1].plot(df.index, df['rel_index'], color=c_primary, linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Reliability Index")
     axes[1].fill_between(df.index, 0, df['rel_index'], color=c_primary, alpha=0.08)
     axes[1].set_ylabel("Deviation (Lower=Better)", fontsize=12)
     axes[1].set_title("Rank Histogram Flatness Degradation (Reliability Index)", fontsize=13, fontweight='bold')
@@ -174,10 +169,9 @@ def plot_rt_diagnostics(df, v_name, obs_id, daterange_str, output_file=None):
     # -----------------------------------------------------------------
     # Panel 3: Directional Bias Index
     # -----------------------------------------------------------------
-    axes[2].plot(df.index, df['bias_index'], color='#d95f02', linestyle='-', linewidth=2.2, label="Directional Bias Index")
+    axes[2].plot(df.index, df['bias_index'], color='#d95f02', linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Directional Bias Index")
     axes[2].axhline(0, color='black', linestyle='-', linewidth=1.2, alpha=0.7)
     
-    # Distinct shading to highlight overforecasting vs underforecasting phases
     axes[2].fill_between(df.index, 0, df['bias_index'], where=(df['bias_index'] >= 0), color='#fee0d2', alpha=0.6, interpolate=True)
     axes[2].fill_between(df.index, 0, df['bias_index'], where=(df['bias_index'] < 0), color='#deebf7', alpha=0.6, interpolate=True)
     
@@ -199,10 +193,11 @@ def plot_rt_diagnostics(df, v_name, obs_id, daterange_str, output_file=None):
     axes[3].grid(True, linestyle=':', alpha=0.5)
     axes[3].legend(loc='upper left', ncol=2)
 
-    # Clean operational X-axis styling: Major ticks every 6 hours, labeled with Month-Day and Hour
-    axes[3].xaxis.set_major_locator(mdates.HourLocator(byhour=[0, 6, 12, 18]))
+    # High density hourly settings for standard real-time monitoring display
+    axes[3].xaxis.set_major_locator(mdates.HourLocator(interval=6))
     axes[3].xaxis.set_major_formatter(mdates.DateFormatter('%m-%d\n%H:%M'))
     axes[3].xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    plt.xticks(rotation=30, ha='right')
     
     for ax in axes:
         ax.tick_params(labelbottom=True, labelsize=9)
@@ -211,7 +206,7 @@ def plot_rt_diagnostics(df, v_name, obs_id, daterange_str, output_file=None):
     
     if output_file:
         fig.savefig(output_file, dpi=150, bbox_inches='tight')
-        print(f"Saved Real-time Plot → {output_file}")
+        print(f"Saved Image -> {output_file}")
     else:
         plt.show()
     plt.close(fig)
@@ -221,69 +216,87 @@ def plot_rt_diagnostics(df, v_name, obs_id, daterange_str, output_file=None):
 # ==========================================
 if __name__ == '__main__':
     
-    # Argument validation check
+    # Input argument check
     args = sys.argv
     nargs = len(args) - 1
-    if nargs < 4 or len(sys.argv[1]) < 10:
-        print(f'Usage: {os.path.basename(sys.argv[0])} <YYYYMMDDHH> <days> <variable_name> <obs_type>')
-        print(f'Variables allowed: airTemperature, specificHumidity, stationPressure, windEastward, windNorthward')
-        print(f'Example: ./rt_ensemble_monitor.py 2026052212 7 stationPressure 187')
+    if nargs < 2 or len(sys.argv[1]) < 10:
+        print(f'Usage: {os.path.basename(sys.argv[0])} <YYYYMMDDHH> <days>')
+        print(f'Example: ./timeseries_ensemble_monitor.py 2026052212 7')
         sys.exit(1)
         
     CDATE = sys.argv[1]
     MAX_DAYS = sys.argv[2]
-    varname = sys.argv[3]
-    obs_type = sys.argv[4]
-
-    if varname not in VAR_ABBR_MAP:
-        print(f"Error: Unknown variable name '{varname}'. Please check inputs.")
-        sys.exit(1)
-
-    var_abbr = VAR_ABBR_MAP[varname]
-    filename_tmpl = f"jdiag_adpsfc_{var_abbr}{obs_type}.nc"
     lookback_hours = int(MAX_DAYS) * 24
     
-    # Calculate real-time target timeline (stretching from lookback anchor to current cycle)
+    # Extract Environment variables matching your operational setup
+    MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
+    WGF         = os.getenv('WGF', 'WGF_not_defined')
+    RUN         = os.getenv('RUN', 'RUN_not_defined')
+    
+    # Calculate real-time target window bounds
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
-    time_all = pd.date_range(start=dateBgn, end=dateEnd, freq='h')
     
-    print(f"====================================================")
-    print(f"Real-time Monitoring Init Target (CDATE): {CDATE}")
-    print(f"Lookback Window: Past {MAX_DAYS} days ({lookback_hours} hours)")
-    print(f"Timeline: {dateBgn.strftime('%Y-%m-%d %H:00')} -> {dateEnd.strftime('%Y-%m-%d %H:00')}")
-    print(f"====================================================")
-    
-    # Initialize metrics structure
-    metrics_series = {k: [] for k in METRIC_KEYS}
-    
-    # Iterate dynamically backward across the verification window
-    for target_dt in time_all:
-        if TASK == 'getkf_post':
-            target_file = get_file_path(EXP_PATH, EXP_NAME, VERSION, 
-                                        target_dt.strftime("%Y%m%d"), target_dt.strftime("%H"), "getkf_post", filename_tmpl)
-        elif TASK == 'getkf_observer':
-            # Strategy B handling: Look into the next hour's directory to find current diagnostics
-            dir_dt_B = target_dt + timedelta(hours=1)
-            target_file = get_file_path(EXP_PATH, EXP_NAME, VERSION, 
-                                        dir_dt_B.strftime("%Y%m%d"), dir_dt_B.strftime("%H"), "getkf_observer", filename_tmpl)
-        else:
-            raise ValueError(f"Unknown task configuration: {TASK}.")
-            
-        # Parse single hour's metrics
-        res = process_single_hour(target_file, varname, num_members)
+    # Main driver looping over operational subtypes sequence
+    for obs in observers:
         
-        # Append data points to the array
-        for k in METRIC_KEYS:
-            metrics_series[k].append(res[k])
+        # 1. Parse name segments to map variables and files
+        parts = obs.split('_')
+        group_prefix = parts[0]
+        suffix = parts[1]
+        
+        # Extract letters only from the suffix (e.g., 'uv287' -> 'uv', 'ps181' -> 'ps')
+        var_abbr = ''.join([i for i in suffix if not i.isdigit()])
+        filename_tmpl = f"jdiag_{group_prefix}_{suffix}.nc" 
+        
+        # 2. Fetch the target internal long variable names list from configuration block
+        if var_abbr not in VAR_MAP:
+            print(f"Warning: Extracted Abbreviation '{var_abbr}' is unknown! Skipping observer type {obs}.")
+            continue
             
-    # Bind everything into a structured Pandas DataFrame
-    df_results = pd.DataFrame(metrics_series, index=time_all)
-    
-    # Generate timestamp ranges for image labeling
-    daterange_str = f'{dateBgn.strftime("%Y%m%d%H")}-{CDATE}'
-    output_filename = f'rt_monitor_{var_abbr}{obs_type}_{daterange_str}.png'
-    
-    # Output the final product
-    plot_rt_diagnostics(df_results, varname, obs_type, daterange_str, output_file=output_filename)
-    print("Real-time diagnostic task finished successfully.")
+        target_varnames = VAR_MAP[var_abbr]
+        
+        # 3. Process each internal target variable sequentially (will loop twice for 'uv')
+        for varname in target_varnames:
+            print(f"\nProcessing real-time diagnostics for: {obs} | Variable: {varname}...")
+            
+            # Setup storage tracking lookback hours
+            tseries = {k: [np.nan] * (lookback_hours + 1) for k in METRIC_KEYS}
+            time_axis = []
+            
+            # Chronological loop parsing files hour-by-hour
+            for i in range(lookback_hours + 1):
+                target_dt = dateBgn + timedelta(hours=i)
+                time_axis.append(target_dt)
+                
+                pdy = target_dt.strftime("%Y%m%d")
+                cyc = target_dt.strftime("%H")
+                
+                # Strategy: Look into the next hour directory to capture diagnostics
+                dir_dt_B = target_dt + timedelta(hours=1)
+                target_file = get_file_path(MY_COM_BASE, RUN, dir_dt_B.strftime("%Y%m%d"), dir_dt_B.strftime("%H"), WGF, filename_tmpl)
+                    
+                # Compute cycle calculations
+                print(target_file)
+                res = process_single_hour(target_file, varname, num_members)
+                print(res)
+                for k in METRIC_KEYS:
+                    tseries[k][i] = res[k]
+                    
+            # 4. Generate DataFrame and output visualization
+            df_results = pd.DataFrame(tseries, index=time_axis)
+            print(df_results)
+            
+            # Guardrail: Check if the dataframe contains entirely missing data to skip plotting blank pages
+            if df_results['crps_mean'].isna().all():
+                print(f"-> No valid data records inside NetCDF found for {obs} ({varname}) over lookback timeframe. Skipping plot.")
+                continue
+                
+            daterange_str = f'{dateBgn.strftime("%Y%m%d%H")}-{CDATE}'
+            
+            # Save separate tracking file for each wind component
+            output_filename = f'rt_monitor_{obs}_{varname}_{daterange_str}.png'
+            
+            plot_rt_diagnostics(df_results, obs, varname, daterange_str, output_file=output_filename)
+
+    print("\nAll real-time observer monitoring updates processed successfully.")
