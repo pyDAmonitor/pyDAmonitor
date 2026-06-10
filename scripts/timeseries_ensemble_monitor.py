@@ -61,7 +61,8 @@ def get_file_path(base_path, run_name, pdy, cyc, wgf, file_name):
 
 def compute_reliability_index(bin_counts, m_members, num_stations):
     """Computes the deviation of rank histogram from an ideal flat distribution."""
-    if num_stations == 0: return np.nan
+    if num_stations == 0:
+        return np.nan
     ideal_freq = 1.0 / (m_members + 1)
     actual_freq = bin_counts / num_stations
     return np.mean(np.abs(actual_freq - ideal_freq))
@@ -69,7 +70,8 @@ def compute_reliability_index(bin_counts, m_members, num_stations):
 
 def compute_directional_bias_index(bin_counts, num_stations):
     """Computes a normalized directional bias index bounded between [-1, 1]."""
-    if num_stations == 0: return np.nan
+    if num_stations == 0:
+        return np.nan
     half_len = len(bin_counts) // 2
     left_sum = np.sum(bin_counts[:half_len])
     right_sum = np.sum(bin_counts[-half_len:])
@@ -90,10 +92,10 @@ def process_single_hour(file_path, v_name, m_members):
                     obs = np.ma.filled(obs, np.nan)
             else:
                 return {k: np.nan for k in METRIC_KEYS}
- 
+
             num_obs = len(obs)
             fcst = np.full((num_obs, m_members), np.nan)
- 
+
             # Dynamically extract all ensemble members
             for m in range(1, m_members + 1):
                 g_name = f"hofx0_{m}"
@@ -102,35 +104,35 @@ def process_single_hour(file_path, v_name, m_members):
                     if hasattr(member_val, 'mask'):
                         member_val = np.ma.filled(member_val, np.nan)
                     fcst[:, m-1] = member_val
- 
+
             # Quality Control: Filter out completely missing or masked stations
             valid_mask = ~np.isnan(obs) & ~np.isnan(fcst).any(axis=1)
             obs = obs[valid_mask]
             fcst = fcst[valid_mask]
             n_stations = len(obs)
- 
+
             if n_stations == 0:
                 return {k: np.nan for k in METRIC_KEYS}
- 
+
             # --- Calculation of Verification Metrics ---
             crps_vals = ps.crps_ensemble(obs, fcst, axis=-1)
             ens_mean = np.mean(fcst, axis=-1)
             rmse = np.sqrt(np.mean((ens_mean - obs) ** 2))
             spread = np.mean(np.std(fcst, axis=-1, ddof=1))
- 
+
             ranks = np.array([np.sum(f < o) for o, f in zip(obs, fcst)])
             bin_counts, _ = np.histogram(ranks, bins=np.arange(m_members + 2) - 0.5)
- 
+
             bias_index = compute_directional_bias_index(bin_counts, n_stations)
             rel_index = compute_reliability_index(bin_counts, m_members, n_stations)
- 
+
             return {
                 'crps_mean': np.mean(crps_vals), 'crps_median': np.median(crps_vals),
                 'crps_p25': np.percentile(crps_vals, 25), 'crps_p75': np.percentile(crps_vals, 75),
                 'crps_p5': np.percentile(crps_vals, 5), 'crps_p95': np.percentile(crps_vals, 95),
                 'rmse': rmse, 'spread': spread, 'bias_index': bias_index, 'rel_index': rel_index
             }
- 
+
     except Exception as e:
         print(f"Error parsing file {file_path}: {e}")
         return {k: np.nan for k in METRIC_KEYS}
@@ -148,7 +150,7 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
     c_secondary = '#2ca02c'    # Median tracker (Green)
     c_edge = '#aec7e8'         # Extreme bounds (Light Blue)
     c_core = '#98df8a'         # Interquartile range (Light Green)
- 
+
     # -----------------------------------------------------------------
     # Panel 1: CRPS
     # -----------------------------------------------------------------
@@ -156,7 +158,7 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
     axes[0].fill_between(df.index, df['crps_p25'], df['crps_p75'], color=c_core, alpha=0.4, label="Spatial Core (25%-75%)")
     axes[0].plot(df.index, df['crps_median'], color=c_secondary, linestyle='--', linewidth=1.8, label="Spatial Median")
     axes[0].plot(df.index, df['crps_mean'], color=c_primary, linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Spatial Mean")
- 
+
     axes[0].set_ylabel(f"CRPS", fontsize=12)
     axes[0].set_title(f"CRPS Performance Tracking | Observer: {obs_label} ({actual_varname}) | {daterange_str}", fontsize=13, fontweight='bold')
     axes[0].grid(True, linestyle=':', alpha=0.5)
@@ -176,14 +178,14 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
     # -----------------------------------------------------------------
     axes[2].plot(df.index, df['bias_index'], color='#d95f02', linestyle='-', linewidth=2.0, marker='o', markersize=2, label="Directional Bias Index")
     axes[2].axhline(0, color='black', linestyle='-', linewidth=1.2, alpha=0.7)
- 
+
     axes[2].fill_between(df.index, 0, df['bias_index'], where=(df['bias_index'] >= 0), color='#fee0d2', alpha=0.6, interpolate=True)
     axes[2].fill_between(df.index, 0, df['bias_index'], where=(df['bias_index'] < 0), color='#deebf7', alpha=0.6, interpolate=True)
- 
+
     axes[2].set_ylabel("← Underforecast | Overforecast →", fontsize=11)
     axes[2].set_title("Systematic Forecast Bias Evolution", fontsize=13, fontweight='bold')
     axes[2].grid(True, linestyle=':', alpha=0.5)
- 
+
     max_bias = np.nanmax(np.abs(df['bias_index']))
     if not np.isnan(max_bias) and max_bias > 0:
         axes[2].set_ylim(-max_bias * 1.3, max_bias * 1.3)
@@ -203,12 +205,12 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
     axes[3].xaxis.set_major_formatter(mdates.DateFormatter('%m-%d\n%H:%M'))
     axes[3].xaxis.set_minor_locator(mdates.HourLocator(interval=1))
     plt.xticks(rotation=30, ha='right')
- 
+
     for ax in axes:
         ax.tick_params(labelbottom=True, labelsize=9)
 
     plt.tight_layout()
- 
+
     if output_file:
         fig.savefig(output_file, dpi=150, bbox_inches='tight')
         print(f"Saved Image -> {output_file}")
@@ -220,7 +222,7 @@ def plot_rt_diagnostics(df, obs_label, actual_varname, daterange_str, output_fil
 # 4. MAIN REAL-TIME EXECUTION BLOCK
 # ==========================================
 if __name__ == '__main__':
- 
+
     # Input argument check
     args = sys.argv
     nargs = len(args) - 1
@@ -228,74 +230,74 @@ if __name__ == '__main__':
         print(f'Usage: {os.path.basename(sys.argv[0])} <YYYYMMDDHH> <days>')
         print(f'Example: ./timeseries_ensemble_monitor.py 2026052212 7')
         sys.exit(1)
- 
+
     CDATE = sys.argv[1]
     MAX_DAYS = sys.argv[2]
     lookback_hours = int(MAX_DAYS) * 24
- 
+
     # Extract Environment variables matching your operational setup
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
     WGF         = os.getenv('WGF', 'WGF_not_defined')
     RUN         = os.getenv('RUN', 'RUN_not_defined')
- 
+
     # Calculate real-time target window bounds
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
- 
+
     # Main driver looping over operational subtypes sequence
     for obs in observers:
- 
+
         # 1. Parse name segments to map variables and files
         parts = obs.split('_')
         group_prefix = parts[0]
         suffix = parts[1]
- 
+
         # Extract letters only from the suffix (e.g., 'uv287' -> 'uv', 'ps181' -> 'ps')
         var_abbr = ''.join([i for i in suffix if not i.isdigit()])
         filename_tmpl = f"jdiag_{group_prefix}_{suffix}.nc"
- 
+
         # 2. Fetch the target internal long variable names list from configuration block
         if var_abbr not in VAR_MAP:
             print(f"Warning: Extracted Abbreviation '{var_abbr}' is unknown! Skipping observer type {obs}.")
             continue
- 
+
         target_varnames = VAR_MAP[var_abbr]
- 
+
         # 3. Process each internal target variable sequentially (will loop twice for 'uv')
         for varname in target_varnames:
             print(f"\nProcessing real-time diagnostics for: {obs} | Variable: {varname}...")
- 
+
             # Setup storage tracking lookback hours
             tseries = {k: [np.nan] * (lookback_hours + 1) for k in METRIC_KEYS}
             time_axis = []
- 
+
             # Chronological loop parsing files hour-by-hour
             for i in range(lookback_hours + 1):
                 target_dt = dateBgn + timedelta(hours=i)
                 time_axis.append(target_dt)
- 
+
                 pdy = target_dt.strftime("%Y%m%d")
                 cyc = target_dt.strftime("%H")
- 
+
                 # Strategy: Look into the next hour directory to capture diagnostics
                 dir_dt_B = target_dt + timedelta(hours=1)
                 target_file = get_file_path(MY_COM_BASE, RUN, dir_dt_B.strftime("%Y%m%d"), dir_dt_B.strftime("%H"), WGF, filename_tmpl)
- 
+
                 # Compute cycle calculations
                 res = process_single_hour(target_file, varname, num_members)
                 for k in METRIC_KEYS:
                     tseries[k][i] = res[k]
- 
+
             # 4. Generate DataFrame and output visualization
             df_results = pd.DataFrame(tseries, index=time_axis)
- 
+
             # Guardrail: Check if the dataframe contains entirely missing data to skip plotting blank pages
             if df_results['crps_mean'].isna().all():
                 print(f"-> No valid data records inside NetCDF found for {obs} ({varname}) over lookback timeframe. Skipping plot.")
                 continue
- 
+
             daterange_str = f'{dateBgn.strftime("%Y%m%d%H")}-{CDATE}'
- 
+
             # Save separate tracking file for each wind component
             output_filename = f'rt_monitor_{obs}_{varname}_{daterange_str}.png'
  
