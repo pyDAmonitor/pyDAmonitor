@@ -5,11 +5,9 @@ set -x
 
 mkdir -p web
 cd web
-sed -e "s/2024050600/${PDY}${cyc}/g" ${PYDAMONITOR}/ush/index.html_cycle > index.html
-cp ${PYDAMONITOR}/ush/yaml_peek.html .
+sed -e "s/2024050600/${CDATE}/g" ${PYDAMONITOR}/ush/index.html_cycle_enkf > index.html
 mv ../*.png .
 mv ../*.txt .
 ln -snfr *.txt ..  # link a copy to the parent directory
 cp -L ../log.*out .
-cp -L ../jedivar.yaml .
-cp -L ../jedivar.pass2.yaml .
+cp -L ../getkf.yaml .
