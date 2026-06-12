@@ -8,3 +8,11 @@ set -x
 #------------------------------------------------------------------------------------------------
 
 ln -snf ${GETKF_DIR}/* .
+#
+# plot the time series of ensemble statistics
+ln -snf ${PYDAMONITOR}/timeseries_ensemble_monitor.py .
+./timeseries_ensemble_monitor.py ${CDATE} 10
+#
+# prep files for web
+ln -snf ${PYDAMONITOR}/ush/prep_web_enkf.sh .
+./prep_web_enkf.sh
