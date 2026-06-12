@@ -30,8 +30,8 @@ def main():
     imfile = './resnorm1'
     plt.plot(x, y, '-o', c='black', linewidth=2.0, marker="", label='resNorm')
     plt.xlabel('Number of iterations', fontsize=20)
-    plt.ylabel('resNorm', fontsize=20)
-    plt.title('resNorm', fontsize=20)
+    plt.ylabel('Residual norm', fontsize=20)
+    plt.title('Residual Norm, Loop 1', fontsize=20)
     plt.savefig(imfile)
     plt.close()
 
@@ -44,7 +44,42 @@ def main():
     plt.plot(x, y, '-o', c='blue', linewidth=2.0, marker="", label='JoJc')
     plt.xlabel('Number of iterations', fontsize=20)
     plt.ylabel('Cost function', fontsize=20)
-    plt.title('Cost Function', fontsize=20)
+    plt.title('Cost Function, Loop 1', fontsize=20)
+    plt.legend(loc="upper right", fontsize=10)
+    plt.savefig(imfile)
+    plt.close()
+
+    first_row = blank_line_numbers[0] + 2
+    skip_rows = blank_line_numbers[0] + 3
+
+    print('beginning of second loop:', first_row)
+
+    half_rows2 = blank_line_numbers[1] - skip_rows
+
+    print(half_rows2)
+
+    data2 = pd.read_csv(mfile, header=first_row, skip_blank_lines=False, skipinitialspace=True, nrows=half_rows2, sep=' ')
+
+    y = data2['resNorm']
+    x = data2['i']
+    imfile = './resnorm2'
+    plt.plot(x, y, '-o', c='black', linewidth=2.0, marker="", label='resNorm')
+    plt.xlabel('Number of iterations', fontsize=20)
+    plt.ylabel('Residual norm', fontsize=20)
+    plt.title('Residual Norm, Loop 2', fontsize=20)
+    plt.savefig(imfile)
+    plt.close()
+
+    imfile = './cost2'
+    y = data2['J']
+    plt.plot(x, y, '-o', c='red', linewidth=2.0, marker="", label='J')
+    y = data2['Jb']
+    plt.plot(x, y, '-o', c='green', linewidth=2.0, marker="", label='Jb')
+    y = data2['JoJc']
+    plt.plot(x, y, '-o', c='blue', linewidth=2.0, marker="", label='JoJc')
+    plt.xlabel('Number of iterations', fontsize=20)
+    plt.ylabel('Cost function', fontsize=20)
+    plt.title('Cost Function, Loop 2', fontsize=20)
     plt.legend(loc="upper right", fontsize=10)
     plt.savefig(imfile)
 
