@@ -7,9 +7,11 @@ run_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 wflowdir=$(cd ${run_dir}/../..; pwd)
 cd ${run_dir}/..
 
-if [[ ! -d yaml_factory ]]; then
-  git clone https://github.com/wx-workflow/yaml_factory
+if [[ -d yaml_factory ]]; then
+  echo "The yaml_factory/ directory exists. Please backup and remove it first"
+  return 1
 fi
+git clone https://github.com/wx-workflow/yaml_factory
 cd yaml_factory
 
 # always clone the latest rrfs-workflow and associated RDASApp
@@ -34,9 +36,8 @@ git branch
 echo "updates to match the latest workflow super YAML files"
 cd factory
 ./copy_from_workflow.sh
-export YT_DEDENT=fase
-export YT_SPLIT_LEVEL=1
-./yth jedivar.yaml split
+yj jedivar.yaml split1
+yj jedivar.yaml split2
 git add .
 git commit -m "updates to match the latest workflow super YAML files"
 echo -e "\ncurrent directory is: $(pwd)"
