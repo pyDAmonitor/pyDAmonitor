@@ -220,7 +220,7 @@ def parse_radar_log(logfile, split_files=False):
     minimization_stats(loop1, 'minimization_radar.txt', 1)
     #
     # write out the obs_counts.txt files
-    obs_counts('obs_count_radar.txt', pre_loop, loop1, loop2, oma)
+    obs_counts('obs_count_radar.txt', pre_loop, loop1, oma)
 
 
 #

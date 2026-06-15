@@ -82,7 +82,48 @@ def main():
     plt.title('Cost Function, Loop 2', fontsize=20)
     plt.legend(loc="upper right", fontsize=10)
     plt.savefig(imfile)
+    plt.close()
 
+    mfile='./minimization_radar.txt'
+
+    print('read minimization file=', mfile)
+
+    blank_line_numbers = []
+    with open(mfile, 'r') as f:
+        for i, line in enumerate(f):
+            if not line.strip():  # checks if the line is empty or just whitespace
+                blank_line_numbers.append(i)
+
+    print('first blank line found:', blank_line_numbers[0])
+
+    n_rows = blank_line_numbers[0] - 2
+
+    data3 = pd.read_csv(mfile, header=1, skipinitialspace=True, nrows=n_rows, sep=' ')
+
+    y = data3['resNorm']
+    x = data3['i']
+#    print(y)
+    imfile = './resnorm_radar'
+    plt.plot(x, y, '-o', c='black', linewidth=2.0, marker="", label='resNorm')
+    plt.xlabel('Number of iterations', fontsize=20)
+    plt.ylabel('Residual norm', fontsize=20)
+    plt.title('Residual Norm, Radar loop', fontsize=20)
+    plt.savefig(imfile)
+    plt.close()
+
+    imfile = './cost_radar'
+    y = data3['J']
+    plt.plot(x, y, '-o', c='red', linewidth=2.0, marker="", label='J')
+    y = data3['Jb']
+    plt.plot(x, y, '-o', c='green', linewidth=2.0, marker="", label='Jb')
+    y = data3['JoJc']
+    plt.plot(x, y, '-o', c='blue', linewidth=2.0, marker="", label='JoJc')
+    plt.xlabel('Number of iterations', fontsize=20)
+    plt.ylabel('Cost function', fontsize=20)
+    plt.title('Cost Function, Radar loop', fontsize=20)
+    plt.legend(loc="upper right", fontsize=10)
+    plt.savefig(imfile)
+    plt.close()
 
 if __name__ == '__main__':
     main()
