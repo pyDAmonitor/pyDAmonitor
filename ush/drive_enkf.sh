@@ -7,10 +7,10 @@ set -x
 # and then run this script
 #------------------------------------------------------------------------------------------------
 
-ln -snf ${GETKF_DIR}/* .
+ln -snf ${GETKF_DIR}/jdiag*.nc .
 #
 # plot the time series of ensemble statistics
-ln -snf ${PYDAMONITOR}/timeseries_ensemble_monitor.py .
+ln -snf ${PYDAMONITOR}/script/timeseries_ensemble_monitor.py .
 ./timeseries_ensemble_monitor.py ${CDATE} 10
 #
 # prep files for web
