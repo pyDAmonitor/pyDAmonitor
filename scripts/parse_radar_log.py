@@ -104,7 +104,7 @@ def obs_counts(fname, pre_loop, loop1, oma):
         pos += 5
     # -------------------------------------------------------------
     # -- get the obs count for loop0
-    pos, pos1, pos2, pos3, posBT1, posBT2 = 0, 0, 0, 0, 0, 0
+    pos, pos1, pos2, posBT1 = 0, 0, 0, 0
     for observer in dcKnt:
         # ~~~~~~~~ nobs
         pattern = rf"^{observer}\b.*\bnlocs\b.*\bnobs\b"

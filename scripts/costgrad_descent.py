@@ -84,7 +84,7 @@ def main():
     plt.savefig(imfile)
     plt.close()
 
-    mfile='./minimization_radar.txt'
+    mfile = './minimization_radar.txt'
 
     print('read minimization file=', mfile)
 
@@ -124,6 +124,7 @@ def main():
     plt.legend(loc="upper right", fontsize=10)
     plt.savefig(imfile)
     plt.close()
+
 
 if __name__ == '__main__':
     main()
