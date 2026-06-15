@@ -30,7 +30,7 @@ if [[ "${DO_SPINUP:-FALSE}" == "TRUE" ]];  then
 else
   export WORKDIR=${COMOUT}/pyDAmonitor/${WGF}
   export JEDI_DIR=${COMOUT}/jedivar/${WGF}
-  export GETKF_DIR=${COMOUT}/getkf/${WGF}
+  export GETKF_DIR=${COMOUT}/getkf_observer/${WGF}
   export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana/${WGF}
   export NONVAR_BUFR_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_bufrobs_*_${CDATE}.log | head -n 1)
   export NONVAR_REFL_LOG=$(ls ${LOG_DIR}/rrfs_nonvar_reflobs_*_${CDATE}.log | head -n 1)
