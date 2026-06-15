@@ -1,18 +1,20 @@
 import math
 
-r0 = 6356766.0
+r0 = 6356766.0  # the earth's radius (unit: m)
 
-def zeta_to_isa(zeta_file, isa_file):   
-    # Read geometric altitudes
-    with open(zeta_file) as f:
+
+def isa(altitude_file, isa_file):
+    # Read geometric altitudes (unit: m) from input file
+    with open(altitude_file) as f:
         z = [float(line.strip()) for line in f]
-        
-    nsig = len(z)
 
-    # Compute pressure at each level using ISA
+    # Compute International Standard Atmosphere (ISA) pressure at each level
+    # refer to https://en.wikipedia.org/wiki/International_Standard_Atmosphere
+    nsig = len(z)  # the number of vertical levels
     # print(nsig)
     with open(isa_file, 'w') as f:
         for i in range(1, nsig):
+            # calculate geopotential altitude (unit: km) from given geometric altitude (unit: m)
             h = r0 * z[i] / (r0 + z[i]) / 1.0e3
             if 0 <= h < 11:
                 t = 15.0 - 6.5 * h
@@ -26,10 +28,13 @@ def zeta_to_isa(zeta_file, isa_file):
             elif 32 <= h < 47:
                 t = -134.1 + 2.8 * h
                 p = 868.019 * (228.65 / (t + 273.15)) ** 12.201
-            f.write(f" {(p * 0.01):.7g}\n")
+            elif 47 <= h:
+                print(" there is no definition for altitude greater than 47 km yet, will add in future!")
+                break
+            f.write(f" {(p * 0.01):.10g}\n")
 
 
 if __name__ == '__main__':
-    zeta_file = "../data/vert_levels/L60.txt"
+    altitude_file = "../data/vert_levels/L60.txt"
     isa_file = "./mpas_pave_L60.txt"
-    zeta_to_isa(zeta_file, isa_file)
+    isa(altitude_file, isa_file)
