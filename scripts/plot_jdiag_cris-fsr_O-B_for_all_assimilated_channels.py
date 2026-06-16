@@ -18,7 +18,7 @@ import cartopy.feature as cfeature
 
 if os.environ.get('LIBDIR') is not None:
     sys.path.append(os.environ['LIBDIR'])
-    
+
 
 # Set input and output file names
 # --------------------------------
@@ -30,7 +30,7 @@ print("checking fname = ", fname)
 
 # Read input data file
 # ----------------------
-ncd = nc.Dataset(fname, 'r') 
+ncd = nc.Dataset(fname, 'r')
 
 # NetCDF global attributes
 # --------------------------
@@ -40,7 +40,7 @@ print('nc_attrs = ', nc_attrs)
 for nc_attr in nc_attrs:
    print('nc_attr', ncd.getncattr(nc_attr))
 
-# Dimension shape information 
+# Dimension shape information
 # -----------------------------
 nc_dims = [dim for dim in ncd.dimensions]  # list of nc dimensions
 print('nc_dims = ', nc_dims)
@@ -63,7 +63,7 @@ ombg = ncd.groups['ombg'].variables['brightnessTemperature'][:]
 ObsBias0 = ncd.groups['ObsBias0'].variables['brightnessTemperature'][:]
 ObsBias1 = ncd.groups['ObsBias1'].variables['brightnessTemperature'][:]
 ObsBias2 = ncd.groups['ObsBias2'].variables['brightnessTemperature'][:]
-ombnbcData = ombg + ObsBias0 
+ombnbcData = ombg + ObsBias0
 
 
 DerivedObsValue = ncd.groups['DerivedObsValue'].variables['brightnessTemperature'][:]
@@ -75,7 +75,7 @@ qcflag2 = ncd.groups['EffectiveQC2'].variables['brightnessTemperature'][:]
 channels = ncd.variables['Channel'][:]
 
 
-# Check data 
+# Check data
 # -----------
 print('dateTime = ', dateTime)
 print('ombg,length=', len(ombg))
@@ -99,7 +99,7 @@ variables=['O-B after BC','O-B before BC','HofX']
 
 for variable in variables:
     print(variable)
-     
+
     for i,ch in enumerate(channels):
         valid =  qcflag0[:,i] == 0
         O_B_after_BC  = ombg[valid,i]
@@ -112,7 +112,7 @@ for variable in variables:
         lon = lonData[valid]
         lat = latData[valid]
         data_count = np.ma.count(O_B_after_BC)
-    
+
         if variable == 'O-B after BC':
            obarray=O_B_after_BC
            output_dir=output_dir1
@@ -120,17 +120,17 @@ for variable in variables:
            obarray=O_B_before_BC
            output_dir=output_dir2
         elif variable == 'HofX':
-           obarray = obs - O_B_before_BC   
+           obarray = obs - O_B_before_BC
            output_dir=output_dir3
-    
+
         stdev = np.nanstd(obarray)  # Standard deviation
         omean = np.nanmean(obarray) # Mean of the data
         datamin = np.nanmin(obarray)  # Min of the data
         datamax = np.nanmax(obarray)  # Max of the data
         datcount = np.ma.count(obarray)
-    
+
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
-    
+
         # Plot grid lines
         # ----------------
         gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=0), draw_labels=True,
@@ -141,7 +141,7 @@ for variable in variables:
         gl.xlocator = mticker.FixedLocator(
           [-180, -135, -90, -45, 0, 45, 90, 135, 179.9])
 
-    
+
         if variable == 'O-B after BC' or variable == 'O-B before BC':
            cmin=-3
            cmax=3
@@ -160,30 +160,30 @@ for variable in variables:
            cbar = plt.colorbar(sc, ax=ax, orientation="horizontal", pad=.1, fraction=0.06,ticks=[-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5, 3 ])
         elif variable == 'HofX':
            cbar = plt.colorbar(sc, ax=ax, orientation="horizontal", pad=.1, fraction=0.06)
-    
+
         text = f"Total Count:{datcount:0.0f}, Max/Min/Mean/Std: {datamax:0.3f}/{datamin:0.3f}/{omean:0.3f}/{stdev:0.3f} {units}"
         print(text)
         ax.text(0.23, -0.12, text, transform=ax.transAxes, va='bottom', fontsize=8.0)
         cbar.ax.set_ylabel(units, fontsize=10)
-    
+
         #plt.legend(fontsize=6)
         plt.title(f"JEDI: CrIS-FSR {variable} for Channel {int(ch)}")
-    
+
         # --------------
         #ax.set_global()
         #ax.set_extent(conus)
         ax.set_extent(conus_12km)
-    
+
        # Draw coastlines
        # ----------------
         ax.coastlines()
         ax.add_feature(cfeature.STATES, linewidth=0.5)
-   
-   
-        save_path = os.path.join(output_dir, f"CrIS-FSR {variable} for_channel_{int(ch)}.png") 
+
+
+        save_path = os.path.join(output_dir, f"CrIS-FSR {variable} for_channel_{int(ch)}.png")
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"Saved: {save_path}")
 
-   
+
 
