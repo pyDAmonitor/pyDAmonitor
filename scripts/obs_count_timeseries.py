@@ -90,7 +90,7 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
     #
-    # There environment variables should already be defined in the shell
+    # These environment variables should already be defined in the shell
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
     WGF = os.getenv('WGF', 'WGF_not_defined')
     RUN = os.getenv('RUN', 'RUN_not_defined')
