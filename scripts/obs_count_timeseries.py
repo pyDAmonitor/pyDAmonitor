@@ -3,7 +3,7 @@
 #
 import sys
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
 
 
 def read_obs_counts(CDATE, lookback_hours):
-    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
     WGF = os.getenv('WGF', 'WGF_not_defined')
