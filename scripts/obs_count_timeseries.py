@@ -68,7 +68,82 @@ def read_obs_counts(CDATE, lookback_hours):
     return dateBgn, tseries
 
 
-def plot_tseries(tseries, group, start_time, daterange, output_file=None):
+def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
+    """
+    Read nonvar cloud analysis obs counts from nonvar_cloud_out.txt files.
+
+    Parameters
+    ----------
+    CDATE : string
+        Current cycle in YYYYMMDDHH format
+    lookback_hours : integer
+        Number of hours to look back for the time series
+
+    Returns
+    -------
+    dateBgn : datetime
+        Start of the time series
+    tseries  : dict
+        Nested dictionary with obs counts for each group and subtype
+    """
+    #
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
+    dateBgn = dateEnd - timedelta(hours=lookback_hours)
+    #
+    # These environment variables should already be defined in the shell
+    MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
+    WGF = os.getenv('WGF', 'WGF_not_defined')
+    RUN = os.getenv('RUN', 'RUN_not_defined')
+    #
+    # set default values to np.nan for each cycle
+    tseries = {
+        'nonvar_satellite': {'GOES_EAST': [np.nan] * (lookback_hours + 1),
+                             'GOES_WEST': [np.nan] * (lookback_hours + 1)},
+        'nonvar_metar': {'raw_METAR': [np.nan] * (lookback_hours + 1)},
+        'nonvar_lightning': {'raw_lightning': [np.nan] * (lookback_hours + 1)},
+        'nonvar_refl': {'max_val': [np.nan] * (lookback_hours + 1)}
+    }
+    #
+    # Match observation with each ingest program
+    obs_map = {
+        'GOES_EAST': 'nonvar_satellite',
+        'GOES_WEST': 'nonvar_satellite',
+        'raw_METAR': 'nonvar_metar',
+        'raw_lightning': 'nonvar_lightning',
+        'max_val': 'nonvar_refl'
+    }
+    #
+    # Loop over each cycle
+    for i in range(lookback_hours+1):
+        dateCur = dateBgn + timedelta(hours=i)
+        PDY = datetime.strftime(dateCur, "%Y%m%d")
+        cyc = datetime.strftime(dateCur, "%H")
+        mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/nonvar_cloud_out.txt'
+        if not os.path.exists(mypath):
+            mypath = f'{MY_COM_BASE}/{RUN}.{PDY}/{cyc}/pyDAmonitor/{WGF}/web/nonvar_cloud_out.txt'
+        if os.path.exists(mypath):
+            # read all lines of nonvar_cloud_out.txt
+            all_lines = []
+            with open(mypath, 'r') as infile:
+                for line in infile:
+                    if line.strip():
+                        all_lines.append(line.strip())
+            # extract fields from nonvar cloud analysis output file
+            for j in range(1, len(all_lines)):
+                obs = all_lines[j].split()[1].strip()
+                for key in obs_map:
+                    if obs == key:
+                        group = obs_map[key]
+                        tseries[group][obs][i] = all_lines[j].split()[2].strip()
+                        break
+    #
+    # Rename refl max_val field
+    tseries['nonvar_refl']['max_dbz_val'] = tseries['nonvar_refl'].pop('max_val')
+    # ~~~~~~~~~~~~~~~~~~
+    return dateBgn, tseries
+
+
+def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_file=None):
     """
     Plot time series for all subtypes in a group.
 
@@ -77,6 +152,7 @@ def plot_tseries(tseries, group, start_time, daterange, output_file=None):
     tseries     : dict  — the full tseries dictionary
     group       : str   — prefix to filter on, e.g. 'adpsfc'
     start_time  : str or datetime — start of the time window, e.g. '2024-01-01'
+    source.     : str - data source. Options: 'jedi' or 'nonvar'
     output_file : str or None — if given, save figure to this path
     """
     # --- filter observers belonging to this group ---
@@ -88,13 +164,16 @@ def plot_tseries(tseries, group, start_time, daterange, output_file=None):
     # vars_to_plot = ['nobs', 'nobs_r', 'n_loop1', 'n_loop2']
     # colors       = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # linestyles   = ['-',       '--',       '-.',       ':']
-    vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
+    if source == 'jedi':
+        vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
+    elif source == 'nonvar':
+        vars_to_plot = list(tseries[subtypes[0]].keys())
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
     linestyles = ['-',       '--',       '-.']
 
     # --- build time axis ---
     first_obs = subtypes[0]
-    N = len(tseries[first_obs]['nobs'])
+    N = len(tseries[first_obs][vars_to_plot[0]])
     time_index = pd.date_range(start=start_time, periods=N, freq='h')
 
     # --- layout ---
@@ -169,6 +248,8 @@ if __name__ == '__main__':
     CDATE = sys.argv[1]
     MAX_DAYS = sys.argv[2]
     lookback_hours = int(MAX_DAYS) * 24  # days * 24 hours
+    #
+    # JEDI obs
     dateBgn, tseries = read_obs_counts(CDATE, lookback_hours)
     daterange = datetime.strftime(dateBgn, "%Y%m%dT%H") + f'-{CDATE[0:8]}T{CDATE[8:]}'
     plot_tseries(tseries, group='adpsfc_t', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_t.png')
@@ -181,3 +262,10 @@ if __name__ == '__main__':
     plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')
     #
     # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
+    #
+    # Nonvar cloud analysis obs
+    dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
+    plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_satellite.png')
+    plot_tseries(tseries, group='nonvar_metar', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_metar.png')
+    plot_tseries(tseries, group='nonvar_lightning', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_lightning.png')
+    plot_tseries(tseries, group='nonvar_refl', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_refl.png')
