@@ -87,7 +87,7 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
         Nested dictionary with obs counts for each group and subtype
     """
     #
-    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
     #
     # These environment variables should already be defined in the shell
