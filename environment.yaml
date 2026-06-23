@@ -38,6 +38,7 @@ dependencies:
   - cfgrib
   - pygrib
   - grib2io
+  - properscoring
   - pip:
     - pyDAmonitor
     - yamltools4jedi
