@@ -13,8 +13,10 @@ ln -snf ${JEDI_DIR}/* .
 ln -snf ${PYDAMONITOR}/scripts/parse_jedi_log.py .
 ./parse_jedi_log.py
 # parse the radar log file to get these for radar minimization too
-ln -snf ${PYDAMONITOR}/scripts/parse_radar_log.py .
-./parse_radar_log.py
+if [ -f "log.pass2.out" ]; then
+  ln -snf ${PYDAMONITOR}/scripts/parse_radar_log.py .
+  ./parse_radar_log.py
+fi
 #
 # parse the nonvar cloud analysis log files to get nonvar_cloud_out.txt
 if [[ "${DO_NONVAR_CLOUD_ANA:-FALSE}" == "TRUE" ]]; then
