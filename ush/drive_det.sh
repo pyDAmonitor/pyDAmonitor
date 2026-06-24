@@ -13,7 +13,7 @@ ln -snf ${JEDI_DIR}/* .
 ln -snf ${PYDAMONITOR}/scripts/parse_jedi_log.py .
 ./parse_jedi_log.py
 # parse the radar log file to get these for radar minimization too
-if [ -f "log.pass2.out" ]; then
+if [ -s "log.pass2.out" ]; then
   ln -snf ${PYDAMONITOR}/scripts/parse_radar_log.py .
   ./parse_radar_log.py
 fi
