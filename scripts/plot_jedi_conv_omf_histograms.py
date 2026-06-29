@@ -65,6 +65,19 @@ def parse_in_args(argv):
 def determine_jdiag_dict(path, file='ALL'):
     """
     Create a dictionary of jdiag files to plot
+
+    Parameters
+    ----------
+    path : string
+        Directory containing JEDI jdiag files
+    file : string, optional
+        File name to plot. Set to 'ALL' to plot all jdiag files
+    
+    Returns
+    -------
+    Dictionary containing jdiag file names organized by variable 
+    (t, q, etc.) and observation type
+        
     """
 
     # Patterns to match
@@ -96,6 +109,23 @@ def determine_jdiag_dict(path, file='ALL'):
 def create_omf_plots(file, plot_var, typ, verbose=False):
     """
     Create OmF histograms for a single file
+
+    Parameters
+    ----------
+    file : string
+        File name
+    plot_var : string
+        Variable included in file (e.g., t, q, etc.)
+    typ : string
+        Observation type in file (e.g., 120, 220, etc.)
+    verbose : boolean, optional
+        Option to print extra text output while code runs
+    
+    Returns
+    -------
+    Saves a PNG containing the O-B and O-A histogram and also returns a 
+    pd.DataFrame containing O-B and O-A statistics
+
     """
 
     diag = obsSpace(file)
@@ -107,7 +137,8 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
         attrs = [plot_var]
 
     # Dictionary to append statistics to
-    keys = ['var', 'type', 'omb_mean', 'omb_std', 'oma_mean', 'oma_std']
+    keys = ['var', 'type', 'omb_n', 'omb_mean', 'omb_std', 
+            'oma_n', 'oma_mean', 'oma_std']
     stat_dict = {k:[] for k in keys}
 
     # Create histogram for each attribute
@@ -122,8 +153,10 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
         # Save statistics to dictionary
         stat_dict['var'].append(a)
         stat_dict['type'].append(typ)
+        stat_dict['omb_n'].append(len(omb))
         stat_dict['omb_mean'].append(omb_avg)
         stat_dict['omb_std'].append(omb_std)
+        stat_dict['oma_n'].append(len(oma))
         stat_dict['oma_mean'].append(oma_avg)
         stat_dict['oma_std'].append(oma_std)
 
@@ -168,6 +201,18 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
 def omf_hist_driver(all_files, verbose=False):
     """
     Driver that loops over all jdiag files and creates histograms
+
+    Parameters
+    ----------
+    all_files : dictionary
+        JEDI jdiag files to plot
+    verbose : boolean, optional
+        Option to print extra text output as the code runs
+    
+    Returns
+    -------
+    pd.DataFrame containing O-B and O-A statistics for all jdiag files plotted
+    
     """
 
     df_ls = []
@@ -177,7 +222,7 @@ def omf_hist_driver(all_files, verbose=False):
             if verbose: print(f"\nPlotting {v} {typ}")
             df_ls.append(create_omf_plots(all_files[v][typ], v, typ, verbose=verbose))
 
-    return pd.concat(df_ls)
+    return pd.concat(df_ls, ignore_index=True)
 
 #
 # ***********************************************************************
@@ -198,4 +243,4 @@ if __name__ == '__main__':
     stats = omf_hist_driver(jdiags, verbose=verbose)
 
     # Save statistics to CSV file
-    stats.to_csv('jedi_conv_omf_stats.csv')
+    stats.to_csv('jedi_conv_omf_stats.csv', index=False)
