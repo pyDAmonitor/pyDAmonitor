@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # make histograms of OmBs and OmAs for conventional obs using jdiag files
 #
-import os, sys
-pyDAmonitor_ROOT=os.getenv("pyDAmonitor_ROOT")
+from DAmonitor.obs import obsSpace
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import argparse
+import glob
+import os
+import sys
+pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
 if pyDAmonitor_ROOT is None:
     print("!!! pyDAmonitor_ROOT is NOT set. Run `source ush/load_pyDAmonitor.sh`")
 else:
     print(f"pyDAmonitor_ROOT={pyDAmonitor_ROOT}\n")
 sys.path.insert(0, pyDAmonitor_ROOT)
-
-import glob
-import argparse
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from DAmonitor.base import query_dataset, query_data, query_obj, to_dataframe
-from DAmonitor.obs import obsSpace, fit_rate
 
 
 def parse_in_args(argv):
@@ -72,36 +71,36 @@ def determine_jdiag_dict(path, file='ALL'):
         Directory containing JEDI jdiag files
     file : string, optional
         File name to plot. Set to 'ALL' to plot all jdiag files
-    
+
     Returns
     -------
-    Dictionary containing jdiag file names organized by variable 
+    Dictionary containing jdiag file names organized by variable
     (t, q, etc.) and observation type
-        
+
     """
 
     # Patterns to match
     var_patterns = ['t', 'q', 'uv', 'ps', 'pw']
-    num_patterns = list(range(100, 300))
+    num_patterns = [str(n) for n in range(100, 300)]
 
     # Grab all jdiag files unless files != 'ALL'
     if file == 'ALL':
         all_jdiag = glob.glob(f"{path}/jdiag_*.nc")
     else:
-        all_jdiag = [file]
+        all_jdiag = [f"{path}/{file}"]
 
     # Initialize output dictionary
     # First key corresponds to the variable
     # Second key corresponds to the obs type (3-digit prepBUFR number)
-    jdiag_out = {v:{} for v in var_patterns}
+    jdiag_out = {v: {} for v in var_patterns}
 
     for f in all_jdiag:
         sub = f.strip().split('_')[-1][:-3]
         if len(sub) > 3:
             v = sub[:-3]
-            typ = int(sub[-3:])
+            typ = sub[-3:]
             if (v in var_patterns) and (typ in num_patterns):
-                jdiag_out[v][typ] = f
+                jdiag_out[v][int(typ)] = f
 
     return jdiag_out
 
@@ -120,10 +119,10 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
         Observation type in file (e.g., 120, 220, etc.)
     verbose : boolean, optional
         Option to print extra text output while code runs
-    
+
     Returns
     -------
-    Saves a PNG containing the O-B and O-A histogram and also returns a 
+    Saves a PNG containing the O-B and O-A histogram and also returns a
     pd.DataFrame containing O-B and O-A statistics
 
     """
@@ -132,14 +131,14 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
 
     # These are the attributes used to extract variables
     if plot_var == 'uv':
-        attrs = ['u', 'v'] 
+        attrs = ['u', 'v']
     else:
         attrs = [plot_var]
 
     # Dictionary to append statistics to
-    keys = ['var', 'type', 'omb_n', 'omb_mean', 'omb_std', 
+    keys = ['var', 'type', 'omb_n', 'omb_mean', 'omb_std',
             'oma_n', 'oma_mean', 'oma_std']
-    stat_dict = {k:[] for k in keys}
+    stat_dict = {k: [] for k in keys}
 
     # Create histogram for each attribute
     for a in attrs:
@@ -170,12 +169,13 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
                           np.abs(min(max_val, max_avg + 3*max_std)))
         bins = np.linspace(-dist_from_0, dist_from_0, 25)
 
-        if verbose: print(f"attr = {a}, max = {max_val}, min = {min_val}")
+        if verbose:
+            print(f"attr = {a}, max = {max_val}, min = {min_val}")
 
         # Make plot
         fig, ax = plt.subplots(nrows=1, ncols=1)
-        ax.hist(omb, bins=bins, color='b', alpha=0.5, edgecolor='b', label=f"O$-$B")
-        ax.hist(oma, bins=bins, color='r', alpha=0.5, edgecolor='r', label=f"O$-$A")
+        ax.hist(omb, bins=bins, color='b', alpha=0.5, edgecolor='b', label="O$-$B")
+        ax.hist(oma, bins=bins, color='r', alpha=0.5, edgecolor='r', label="O$-$A")
 
         # Add annotations
         fsize = 12
@@ -187,11 +187,12 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
                      f"O$-$A: n = {len(oma)}, avg = {oma_avg:.2e}, stdev = {oma_std:.2e}", size=fsize)
         ax.grid()
 
-        plt.subplots_adjust(left=0.1, bottom=0.11, right=0.99, top=0.85)
+        plt.subplots_adjust(left=0.11, bottom=0.11, right=0.99, top=0.85)
 
         # Save plot
         out_name = f"{a}{typ}_omf_hist.png"
-        if verbose: print(f"Saving plot to {out_name}")
+        if verbose:
+            print(f"Saving plot to {out_name}")
         plt.savefig(out_name)
         plt.close()
 
@@ -208,18 +209,19 @@ def omf_hist_driver(all_files, verbose=False):
         JEDI jdiag files to plot
     verbose : boolean, optional
         Option to print extra text output as the code runs
-    
+
     Returns
     -------
     pd.DataFrame containing O-B and O-A statistics for all jdiag files plotted
-    
+
     """
 
     df_ls = []
 
     for v in all_files:
         for typ in all_files[v]:
-            if verbose: print(f"\nPlotting {v} {typ}")
+            if verbose:
+                print(f"\nPlotting {v} {typ}")
             df_ls.append(create_omf_plots(all_files[v][typ], v, typ, verbose=verbose))
 
     return pd.concat(df_ls, ignore_index=True)
@@ -229,12 +231,14 @@ def omf_hist_driver(all_files, verbose=False):
 # !!  MAIN starts here !!
 # ***********************************************************************
 
+
 if __name__ == '__main__':
 
     # Read in user inputs
     param = parse_in_args(sys.argv[1:])
     verbose = False
-    if param['verbose'] == 'true': verbose = True
+    if param['verbose'] == 'true':
+        verbose = True
 
     # Determine list of jdiag files to operate on
     jdiags = determine_jdiag_dict(param['path'], file=param['jdiag_file'])
