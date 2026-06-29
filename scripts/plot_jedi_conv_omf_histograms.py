@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 # make histograms of OmBs and OmAs for conventional obs using jdiag files
 #
-import sys
+import os, sys
+pyDAmonitor_ROOT=os.getenv("pyDAmonitor_ROOT")
+if pyDAmonitor_ROOT is None:
+    print("!!! pyDAmonitor_ROOT is NOT set. Run `source ush/load_pyDAmonitor.sh`")
+else:
+    print(f"pyDAmonitor_ROOT={pyDAmonitor_ROOT}\n")
+sys.path.insert(0, pyDAmonitor_ROOT)
+
 import glob
 import argparse
 import numpy as np
@@ -45,6 +52,13 @@ def parse_in_args(argv):
                              all files',
                         type=str)
 
+    parser.add_argument('--verbose',
+                        dest='verbose',
+                        default='false',
+                        help='Option to print text output while code runs. \
+                              Options: "true" or "false"',
+                        type=str)
+
     return vars(parser.parse_args(argv))
 
 
@@ -58,7 +72,7 @@ def determine_jdiag_dict(path, file='ALL'):
     num_patterns = list(range(100, 300))
 
     # Grab all jdiag files unless files != 'ALL'
-    if files == 'ALL':
+    if file == 'ALL':
         all_jdiag = glob.glob(f"{path}/jdiag_*.nc")
     else:
         all_jdiag = [file]
@@ -79,7 +93,7 @@ def determine_jdiag_dict(path, file='ALL'):
     return jdiag_out
 
 
-def create_omf_plots(file, plot_var, typ):
+def create_omf_plots(file, plot_var, typ, verbose=False):
     """
     Create OmF histograms for a single file
     """
@@ -98,8 +112,8 @@ def create_omf_plots(file, plot_var, typ):
 
     # Create histogram for each attribute
     for a in attrs:
-        omb = getattr(getattr(file, a), 'ombg')
-        oma = getattr(getattr(file, a), 'oman')
+        omb = getattr(getattr(diag, a), 'ombg')
+        oma = getattr(getattr(diag, a), 'oman')
         omb_avg = np.mean(omb)
         oma_avg = np.mean(oma)
         omb_std = np.std(omb)
@@ -119,32 +133,39 @@ def create_omf_plots(file, plot_var, typ):
         max_avg = max(omb_avg, oma_avg)
         min_val = min(np.amin(omb), np.amin(oma))
         max_val = max(np.amax(omb), np.amax(oma))
-        bins = np.arange(max(min_val, min_avg - 3*max_std),
-                         min(max_val, max_avg + 3*max_std),
-                         50)
+        dist_from_0 = max(np.abs(max(min_val, min_avg - 3*max_std)),
+                          np.abs(min(max_val, max_avg + 3*max_std)))
+        bins = np.linspace(-dist_from_0, dist_from_0, 25)
+
+        if verbose: print(f"attr = {a}, max = {max_val}, min = {min_val}")
 
         # Make plot
         fig, ax = plt.subplots(nrows=1, ncols=1)
-        ax.hist(omb, bins=bins, color='b', 
-                label=f"O-B (avg = {omb_avg:.3e}, std = {omb_std:.3e}")
-        ax.hist(oma, bins=bins, color='r', 
-                label=f"O-A (avg = {oma_avg:.3e}, std = {oma_std:.3e}")
+        ax.hist(omb, bins=bins, color='b', alpha=0.5, edgecolor='b', label=f"O$-$B")
+        ax.hist(oma, bins=bins, color='r', alpha=0.5, edgecolor='r', label=f"O$-$A")
 
+        # Add annotations
         fsize = 12
         ax.legend(fontsize=fsize)
         ax.set_xlabel('values', size=fsize)
         ax.set_ylabel('count', size=fsize)
-        ax.set_title(f"{a} {typ}", size=(fsize+2))
+        ax.set_title(f"{a} {typ}\n" +
+                     f"O$-$B: n = {len(omb)}, avg = {omb_avg:.2e}, stdev = {omb_std:.2e}\n" +
+                     f"O$-$A: n = {len(oma)}, avg = {oma_avg:.2e}, stdev = {oma_std:.2e}", size=fsize)
         ax.grid()
 
+        plt.subplots_adjust(left=0.1, bottom=0.11, right=0.99, top=0.85)
+
+        # Save plot
         out_name = f"{a}{typ}_omf_hist.png"
-        print(f"Saving plot to {out_name}")
+        if verbose: print(f"Saving plot to {out_name}")
         plt.savefig(out_name)
+        plt.close()
 
     return pd.DataFrame.from_dict(stat_dict)
 
 
-def omf_hist_driver(all_files):
+def omf_hist_driver(all_files, verbose=False):
     """
     Driver that loops over all jdiag files and creates histograms
     """
@@ -153,7 +174,8 @@ def omf_hist_driver(all_files):
 
     for v in all_files:
         for typ in all_files[v]:
-            df_ls.append(create_omf_plots(all_files[v][typ], v, typ))
+            if verbose: print(f"\nPlotting {v} {typ}")
+            df_ls.append(create_omf_plots(all_files[v][typ], v, typ, verbose=verbose))
 
     return pd.concat(df_ls)
 
@@ -166,12 +188,14 @@ if __name__ == '__main__':
 
     # Read in user inputs
     param = parse_in_args(sys.argv[1:])
+    verbose = False
+    if param['verbose'] == 'true': verbose = True
 
     # Determine list of jdiag files to operate on
-    jdiags = determine_jdiag_list(param['path'], file=param['jdiag_file'])
+    jdiags = determine_jdiag_dict(param['path'], file=param['jdiag_file'])
 
     # Create OmF plots
-    stats = omf_hist_driver(jdiags)
+    stats = omf_hist_driver(jdiags, verbose=verbose)
 
     # Save statistics to CSV file
     stats.to_csv('jedi_conv_omf_stats.csv')
