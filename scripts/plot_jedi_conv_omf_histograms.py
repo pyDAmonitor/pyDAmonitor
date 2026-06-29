@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # make histograms of OmBs and OmAs for conventional obs using jdiag files
 #
-from DAmonitor.obs import obsSpace
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,12 +8,14 @@ import argparse
 import glob
 import os
 import sys
+
 pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
 if pyDAmonitor_ROOT is None:
     print("!!! pyDAmonitor_ROOT is NOT set. Run `source ush/load_pyDAmonitor.sh`")
 else:
     print(f"pyDAmonitor_ROOT={pyDAmonitor_ROOT}\n")
 sys.path.insert(0, pyDAmonitor_ROOT)
+from DAmonitor.obs import obsSpace
 
 
 def parse_in_args(argv):
