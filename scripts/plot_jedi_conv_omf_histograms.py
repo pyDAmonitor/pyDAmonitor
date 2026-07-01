@@ -81,7 +81,7 @@ def determine_jdiag_dict(path, file='ALL'):
     """
 
     # Patterns to match
-    var_patterns = ['t', 'q', 'uv', 'ps', 'pw']
+    var_patterns = ['t', 'q', 'uv', 'ps']
     num_patterns = [str(n) for n in range(100, 300)]
 
     # Grab all jdiag files unless files != 'ALL'
