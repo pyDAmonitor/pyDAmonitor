@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # make histograms of OmBs and OmAs for conventional obs using jdiag files
 #
-import pandas as pd
-import matplotlib
-matplotlib.use('agg')  # noqa: E402
-import matplotlib.pyplot as plt
-import numpy as np
-import argparse
-import glob
-import os
-import sys
-
 from pathlib import Path
+import sys
+import os
+import glob
+import argparse
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+matplotlib.use('agg')
+
 # Ensure the repo root (parent of scripts/) is on sys.path so `DAmonitor` can be imported
 repo_root = Path(__file__).resolve().parents[1]
 pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
@@ -155,7 +155,7 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
         oma = np.ma.asarray(getattr(getattr(diag, a), 'oman')).compressed()
 
         # Drop NaN/Inf values to avoid propagating invalid stats/bins
-        # Copilot recommendation. I'm doubtful that we'll encounter this edge 
+        # Copilot recommendation. I'm doubtful that we'll encounter this edge
         # case, but I see no reason to remove it
         omb = omb[np.isfinite(omb)]
         oma = oma[np.isfinite(oma)]
@@ -246,7 +246,7 @@ def omf_hist_driver(all_files, verbose=False):
             df_ls.append(create_omf_plots(all_files[v][typ], v, typ, verbose=verbose))
 
     if not df_ls:
-         raise SystemExit("No matching jdiag files found; check --path and/or \
+        raise SystemExit("No matching jdiag files found; check --path and/or \
                            --jdiag_file options.")
 
     return pd.concat(df_ls, ignore_index=True)
