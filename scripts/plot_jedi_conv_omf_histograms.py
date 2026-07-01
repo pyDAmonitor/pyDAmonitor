@@ -2,6 +2,8 @@
 # make histograms of OmBs and OmAs for conventional obs using jdiag files
 #
 import pandas as pd
+import matplotlib
+matplotlib.use('agg')  # noqa: E402
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -9,13 +11,17 @@ import glob
 import os
 import sys
 
+from pathlib import Path
+# Ensure the repo root (parent of scripts/) is on sys.path so `DAmonitor` can be imported
+repo_root = Path(__file__).resolve().parents[1]
 pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
-if pyDAmonitor_ROOT is None:
-    print("!!! pyDAmonitor_ROOT is NOT set. Run `source ush/load_pyDAmonitor.sh`")
+if (repo_root / "DAmonitor").is_dir():
+    sys.path.insert(0, str(repo_root))
+elif pyDAmonitor_ROOT:
+    sys.path.insert(0, pyDAmonitor_ROOT)
 else:
-    print(f"pyDAmonitor_ROOT={pyDAmonitor_ROOT}\n")
-sys.path.insert(0, pyDAmonitor_ROOT)
-from DAmonitor.obs import obsSpace
+    raise SystemExit("pyDAmonitor_ROOT is not set and DAmonitor was not found relative to this script. Run `source ush/load_pyDAmonitor.sh`.")
+from DAmonitor.obs import obsSpace  # noqa: E402
 
 
 def parse_in_args(argv):
@@ -96,7 +102,9 @@ def determine_jdiag_dict(path, file='ALL'):
     jdiag_out = {v: {} for v in var_patterns}
 
     for f in all_jdiag:
-        sub = f.strip().split('_')[-1][:-3]
+        base = os.path.basename(f)
+        stem, _ = os.path.splitext(base)
+        sub = stem.split('_')[-1]
         if len(sub) > 3:
             v = sub[:-3]
             typ = sub[-3:]
@@ -143,8 +151,20 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
 
     # Create histogram for each attribute
     for a in attrs:
-        omb = getattr(getattr(diag, a), 'ombg')
-        oma = getattr(getattr(diag, a), 'oman')
+        omb = np.ma.asarray(getattr(getattr(diag, a), 'ombg')).compressed()
+        oma = np.ma.asarray(getattr(getattr(diag, a), 'oman')).compressed()
+
+        # Drop NaN/Inf values to avoid propagating invalid stats/bins
+        # Copilot recommendation. I'm doubtful that we'll encounter this edge 
+        # case, but I see no reason to remove it
+        omb = omb[np.isfinite(omb)]
+        oma = oma[np.isfinite(oma)]
+
+        if omb.size == 0 or oma.size == 0:
+            if verbose:
+                print(f"Skipping {a} {typ}: no valid O-B/O-A values found")
+            continue
+
         omb_avg = np.mean(omb)
         oma_avg = np.mean(oma)
         omb_std = np.std(omb)
@@ -153,10 +173,10 @@ def create_omf_plots(file, plot_var, typ, verbose=False):
         # Save statistics to dictionary
         stat_dict['var'].append(a)
         stat_dict['type'].append(typ)
-        stat_dict['omb_n'].append(len(omb))
+        stat_dict['omb_n'].append(omb.size)
         stat_dict['omb_mean'].append(omb_avg)
         stat_dict['omb_std'].append(omb_std)
-        stat_dict['oma_n'].append(len(oma))
+        stat_dict['oma_n'].append(oma.size)
         stat_dict['oma_mean'].append(oma_avg)
         stat_dict['oma_std'].append(oma_std)
 
@@ -225,6 +245,10 @@ def omf_hist_driver(all_files, verbose=False):
                 print(f"\nPlotting {v} {typ}")
             df_ls.append(create_omf_plots(all_files[v][typ], v, typ, verbose=verbose))
 
+    if not df_ls:
+         raise SystemExit("No matching jdiag files found; check --path and/or \
+                           --jdiag_file options.")
+
     return pd.concat(df_ls, ignore_index=True)
 
 #
@@ -237,9 +261,10 @@ if __name__ == '__main__':
 
     # Read in user inputs
     param = parse_in_args(sys.argv[1:])
-    verbose = False
-    if param['verbose'] == 'true':
-        verbose = True
+    verbose_str = str(param['verbose']).strip().lower()
+    if verbose_str not in ('true', 'false'):
+        raise SystemExit('--verbose must be "true" or "false"')
+    verbose = (verbose_str == 'true')
 
     # Determine list of jdiag files to operate on
     jdiags = determine_jdiag_dict(param['path'], file=param['jdiag_file'])
