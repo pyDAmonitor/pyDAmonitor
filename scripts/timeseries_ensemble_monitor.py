@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 import properscoring as ps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # ==========================================
 # 1. REAL-TIME ENVIRONMENT & CONFIGURATION
@@ -243,7 +243,7 @@ if __name__ == '__main__':
     RUN = os.getenv('RUN', 'RUN_not_defined')
 
     # Calculate real-time target window bounds
-    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H")
+    dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
 
     # Main driver looping over operational subtypes sequence

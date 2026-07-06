@@ -1,0 +1,243 @@
+#!/usr/bin/env python
+# parse data assimilation stats from the log file
+#
+import sys
+import re
+
+
+# write a list of lines into a txt file
+def write2file(fname, data):
+    with open(f'{fname}.txt', 'w') as outfile:
+        for line in data:
+            outfile.write(f'{line}\n')
+    outfile.close()
+
+
+# stats for each outer loop
+def minimization_stats(data, fname, iOuterloop):
+    iterations = []
+    start = -999
+    end = -999
+    exit_for = False
+    max_iter = -999
+    norm_reduction_target = -999
+    norm_reduction_final = -999
+    for i, line in enumerate(data):
+        if line.startswith("DRPCGMinimizer: max iter"):
+            numbers = re.findall(r'\d+\.?\d*', line)
+            max_iter = int(numbers[0])        # 50
+            norm_reduction_target = float(numbers[1])  # 0.001
+        elif line.startswith("OOPS_STATS DRPCG start"):
+            start = i
+        elif 'DRPCG Starting Iteration' in line:
+            end = i
+        elif line.startswith("DRPCGMinimizer: reduction in residual norm"):
+            end = i
+            norm_reduction_final = line.split("=")[1].strip()
+            exit_for = True
+        # ~~~~
+        # print(i, start, end, line)
+        if start > 0 and end > 0:
+            iterations.append([data[j] for j in range(start, end)])
+            start = end
+            end = -999
+        if exit_for:
+            break
+    # ~~~~~~~~~~
+    minization = []
+    for i, iteration in enumerate(iterations):
+        dcTmp = {}
+        for line in iteration:
+            if "Residual norm" in line:
+                numbers = re.findall(r'\d+\.?\d*', line)
+                dcTmp["resNorm"] = float(numbers[1])
+            elif "Quadratic cost function: J   (" in line:
+                numbers = re.findall(r'\d+\.?\d*', line)
+                dcTmp["J"] = float(numbers[1])
+            elif "Quadratic cost function: Jb  (" in line:
+                numbers = re.findall(r'\d+\.?\d*', line)
+                dcTmp["Jb"] = float(numbers[1])
+            elif "Quadratic cost function: JoJc(" in line:
+                numbers = re.findall(r'\d+\.?\d*', line)
+                dcTmp["JoJc"] = float(numbers[1])
+                break
+        minization.append(dcTmp)
+    # write out stats for a file
+    file_mode = 'w' if iOuterloop == 1 else 'a'
+    with open(fname, file_mode) as outfile:
+        outfile.write(f'loop{iOuterloop}: max_iter={max_iter}, norm_reduction(target={norm_reduction_target}, final={norm_reduction_final})\n')
+        outfile.write(f"{'i':>3} {'resNorm':>25} {'J':>25} {'Jb':>25} {'JoJc':>25}\n")
+        for i, iteration in enumerate(minization):
+            outfile.write(f"{i:3} {iteration['resNorm']:25.12f} {iteration['J']:25.12f} {iteration['Jb']:25.12f} {iteration['JoJc']:25.12f}\n")
+        outfile.write('\n')
+
+
+def obs_counts(fname, pre_loop, loop1, oma):
+    dcKnt = {}
+    # -------------------------------------------------------------
+    # ~~~~~~~~ n_ioda, n_vars, is_BT(brightness temperature), loop through all observers
+    pos = 0
+    while pos < len(pre_loop):
+        # ~~~~~ find 'read database' line
+        for i in range(pos, len(pre_loop)):
+            if 'read database' in pre_loop[i]:
+                pos = i
+                break
+            else:
+                pos += 1
+        if pos >= len(pre_loop):
+            break
+        line = pre_loop[pos+3]
+        observer = line.split(':')[0]
+        numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
+        if int(numbers[1]) > 0:
+            dcKnt[observer] = {'n_ioda': numbers[1]}
+            #
+            line = pre_loop[pos+2]
+            numbers = re.findall(r'\d+\.?\d*', line.split(':')[1])
+            dcKnt[observer]['n_vars'] = numbers[0]
+            if "brightnessTemperature" in line:
+                dcKnt[observer]['is_BT'] = True
+            else:
+                dcKnt[observer]['is_BT'] = False
+        # ~~~~~~~~~
+        pos += 5
+    # -------------------------------------------------------------
+    # -- get the obs count for loop0
+    pos, pos1, pos2, posBT1 = 0, 0, 0, 0
+    for observer in dcKnt:
+        # ~~~~~~~~ nobs
+        pattern = rf"^{observer}\b.*\bnlocs\b.*\bnobs\b"
+        while pos < len(loop1):
+            line = loop1[pos]
+            if re.search(pattern, line):
+                numbers = re.findall(r'\d+\.?\d*', line.split('=', 1)[1])
+                dcKnt[observer]['nobs'] = str(int(numbers[0]) * int(dcKnt[observer]['n_vars']))
+                if dcKnt[observer]['is_BT']:
+                    dcKnt[observer]['nobs_singleBT'] = numbers[0]
+                break
+            else:
+                pos += 1
+        # ~~~~~~~~ nobs_r, right after "CostJo Observations:"
+        pattern = rf"^{observer} nobs\b.*\bMin\b.*\bMax\b.*\bRMS\b"
+        pattern_no_obs = rf"^{observer}: No observations"
+        while pos1 < len(loop1):
+            line = loop1[pos1]
+            if re.search(pattern, line):
+                numbers = re.findall(r'\d+\.?\d*', line.split(' ', 1)[1])
+                dcKnt[observer]['nobs_r'] = numbers[0]
+                if dcKnt[observer]['is_BT']:
+                    dcKnt[observer]['nobs_r_singleBT'] = str(int(int(numbers[0]) / int(dcKnt[observer]['n_vars'])))
+                break
+            elif re.search(pattern_no_obs, line):
+                dcKnt[observer]['nobs_r'] = 0
+                break
+            else:
+                pos1 += 1
+        # ~~~~~~~~~~
+        # n_loop1, obserr, Jo/n_1
+        dcKnt[observer]['n_loop1'] = 0
+        dcKnt[observer]['Jo/n_1'] = 0
+        dcKnt[observer]['obserr'] = 0
+        while pos2 < len(loop1):
+            line = loop1[pos2]
+            if f'CostJo   : Nonlinear Jo({observer}' in line:
+                if 'No Observations' not in line:
+                    numbers = re.findall(r'\d+\.?\d*(?:e[+-]?\d+)?', line.split('=', 1)[1], re.IGNORECASE)
+                    dcKnt[observer]['n_loop1'] = numbers[1]
+                    dcKnt[observer]['Jo/n_1'] = numbers[2]
+                    dcKnt[observer]['obserr'] = numbers[3]
+                break
+            else:
+                pos2 += 1
+        # ~~~~~~~~~~
+        # satellite n_loop1, nloop2 per channel
+        if dcKnt[observer]['is_BT']:
+            while posBT1 < len(loop1):
+                line = loop1[posBT1]
+                if f'Jo Obs :{observer}:brightnessTemperature' in line:
+                    dcKnt[observer]['ch_loop1'] = {}
+                    for i in range(int(dcKnt[observer]['n_vars'])):
+                        line = loop1[posBT1 + i]
+                        segments = line.split(':')
+                        channel = segments[2].strip().split('_')[1].strip()
+                        if 'No observations' in segments[3]:
+                            dcKnt[observer]['ch_loop1'][channel] = '0'
+                        else:
+                            numbers = re.findall(r'\d+\.?\d*', segments[3].strip())
+                            dcKnt[observer]['ch_loop1'][channel] = numbers[0]
+                    posBT1 += int(dcKnt[observer]['n_vars'])
+                    break
+                else:
+                    posBT1 += 1
+            # ~~~~~~~~
+    # -------------------------------------------------------------
+    # write out files
+    with open(fname, 'w') as outfile:
+        outfile.write(f"{'observer':>16} {'n_ioda':>8} {'nobs':>8} {'nobs_r':>8} {'n_loop1':>8} {'obserr':>12} {'Jo/n_1':>12}\n")
+        for key in dcKnt:
+            outfile.write(f'{key:>16} {dcKnt[key]["n_ioda"]:>8} {dcKnt[key]["nobs"]:>8} {dcKnt[key]["nobs_r"]:>8} {dcKnt[key]["n_loop1"]:>8}')
+            outfile.write(f' {dcKnt[key]["obserr"]:>12} {dcKnt[key]["Jo/n_1"]:>12}\n')
+            if dcKnt[key]['is_BT']:  # write out obs counts per each satellite channel to a seperate fie
+                with open(f'{key}.txt', 'w') as satfile:
+                    satfile.write(f'{key}: each channel(n_ioda={dcKnt[key]["n_ioda"]:>8} nobs={dcKnt[key]["nobs_singleBT"]:>8} nobs_r={dcKnt[key]["nobs_r_singleBT"]:>8})\n'
+                                  f'sum of all channels: n_loop1={dcKnt[key]["n_loop1"]:>8}\n')
+                    satfile.write(f"{'channel':>7} {'n_loop1':>8} {'n_loop2':>8}\n")
+                    for (k1, v1), (k2, v2) in zip(dcKnt[key]['ch_loop1'].items(), dcKnt[key]['ch_loop2'].items()):
+                        if int(v1) != 0 or int(v2) != 0:
+                            satfile.write(f'{k1:>7} {v1:>8} {v2:>8}\n')
+
+
+def parse_radar_log(logfile, split_files=False):
+    # -----------------------------------------------------------------------
+    # read all lines and split into different blocks
+    # -----------------------------------------------------------------------
+    config, pre_loop, loop1, oma, final = ([] for _ in range(5))
+    block = config  # block is a just pointer here, no data copy
+    with open(logfile, 'r') as infile:
+        for line in infile:
+            line = line.rstrip()  # strip all trailing empty spaces
+            if line.startswith('OOPS_STATS ObjectCountHelper started'):
+                block = pre_loop
+            elif line.startswith('IncrementalAssimilation: Configuration for outer iteration 0'):
+                block = loop1
+            elif line.startswith('Variational: incremental assimilation done'):
+                block = oma
+            elif line.startswith('==> destruct MPAS corelist and domain:  0'):
+                block = final
+            # ~~~~~~
+            block.append(line)
+    # ~~~~~~~~~~~
+    # write each block into a txt file when needed
+    if split_files:
+        write2file('config', config)
+        write2file('pre_loop', pre_loop)
+        write2file('loop1', loop1)
+        write2file('oma', oma)
+        write2file('final', final)
+    # ~~~~
+    # write out the minimization.txt file
+    minimization_stats(loop1, 'minimization_radar.txt', 1)
+    #
+    # write out the obs_counts.txt files
+    obs_counts('obs_count_radar.txt', pre_loop, loop1, oma)
+
+
+#
+# ***********************************************************************
+# !!  MAIN starts here !!
+# ***********************************************************************
+if __name__ == '__main__':
+
+    # read the log file name from the command line; if not specified, default to 'log.pass2.out'
+    split_files = False
+    logfile = 'log.pass2.out'
+    if len(sys.argv) > 1:
+        logfile = sys.argv[1]
+        if "split" in logfile:
+            logfile = 'log.pass2.out'
+            split_files = True
+    if len(sys.argv) > 2 and "split" in sys.argv[2]:
+        split_files = True
+
+    parse_radar_log(logfile, split_files)
