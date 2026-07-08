@@ -2,9 +2,9 @@
 
 Safeguard invaluable DA investments by vigilantly monitoring DA performance in both real-time and retrospective scenarios.    
 
-GitHub repository: https://github.com/pyDAmonitor/pyDAmonitor
+### Useful Links
 
-pyDAmonitor book (documentation): https://pydamonitor.github.io/docs
+GitHub repository: https://github.com/pyDAmonitor/pyDAmonitor
 
 Real-time RRFSv2X pyDAmonitor results: https://rapidrefresh.noaa.gov/pyDAmonitor/rrfsv2x/
 
