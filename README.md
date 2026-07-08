@@ -1,3 +1,5 @@
+[pyDAmonitor book](https://pyDAmonitor.github.io/docs) (showcases plots and results)
+
 # pyDAmonitor
 Safeguarding invaluable DA investments by vigilantly monitoring DA performance in both real-time and retrospective scenarios.
 
@@ -6,22 +8,22 @@ Data assimilation (DA) is a critical component of modern weather forecasting and
 
 pyDAmonitor automatically reads both JEDI and GSI diagnostic files to create a comprehensive set of statistics, plots, and maps of key assimilation metrics like OmB (Observation minus Background) and OmA (Observation minus Analysis), innovation distribution, etc. It aims to facilitate and speed up analysis of DA performance in both real-time and retrospective scenarios.
 
-[pyDAmonitor book](https://pyDAmonitor.github.io/docs) (showcases plots and results)
+[pyDAmonitor book](https://pyDAmonitor.github.io/docs)
 
 [Working with pyDAmonitor](https://github.com/pyDAmonitor/pyDAmonitor/wiki/work-with-pyDAmonitor)  
 
 Check the [wiki](https://github.com/pyDAmonitor/pyDAmonitor/wiki) for more information
 
-## Installing the `pyDAmonitor` conda environment
-Run the following commands to install the `pyDAmonitor` conda environment as needed:
-```shell
+## Creating the `pyDAmonitor` conda environment
+Run the following commands to create and activate the `pyDAmonitor` conda environment as needed:
+```
 git clone https://github.com/pyDAmonitor/pyDAmonitor.git
 conda env create -f pyDAmonitor/environment.yaml
 conda activate pyDAmonitor
 ```
 
-**Note:** The `pyDAmonitor` Python environment is already installed on `Hera/Ursa/Gaea/Orion/Hercules/Derecho` and can be loaded with
-```shell
+**Note:** The `pyDAmonitor` environment is already installed on `Hera/Ursa/Gaea/Orion/Hercules/Derecho` and can be loaded with
+```
 source pyDAmonitor/ush/load_pyDAmonitor.sh
 ```
-Sample data is also staged on these machines for a quick start. If you need the sample data on other platforms, feel free to reach out.
+Sample data is also staged on these machines for a quick start. If you need the sample data on other platforms, feel free to reach out to the pyDAmonitor team.
