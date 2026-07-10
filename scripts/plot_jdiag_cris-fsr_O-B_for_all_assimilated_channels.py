@@ -7,12 +7,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import matplotlib.colors as colors
 import cartopy.crs as ccrs
 import netCDF4 as nc
-import numpy.ma as ma
-from netCDF4 import Dataset
-from collections import Counter
 import cartopy.feature as cfeature
 
 
@@ -38,14 +34,14 @@ nc_attrs = ncd.ncattrs()
 print('NetCDF Global Attributes: ')
 print('nc_attrs = ', nc_attrs)
 for nc_attr in nc_attrs:
-   print('nc_attr', ncd.getncattr(nc_attr))
+    print('nc_attr', ncd.getncattr(nc_attr))
 
 # Dimension shape information
 # -----------------------------
 nc_dims = [dim for dim in ncd.dimensions]  # list of nc dimensions
 print('nc_dims = ', nc_dims)
 for dim in nc_dims:
-   print('nc_dims', dim, len(ncd.dimensions[dim]))
+    print('nc_dims', dim, len(ncd.dimensions[dim]))
 
 ##read in data
 # ---------------------
@@ -53,23 +49,14 @@ latData = ncd.groups['MetaData'].variables['latitude'][:].ravel()
 lonData = ncd.groups['MetaData'].variables['longitude'][:].ravel()
 #satidData = ncd.groups['MetaData'].variables['satelliteId'][:].ravel()
 #tbData = ncd.groups['ObsValue'].variables['brightnessTemperature'][:]
-dateTime= ncd.groups['MetaData'].variables['dateTime'][:]
-radiance = ncd.groups['ObsValue'].variables['radiance'][:]
-#cloudCoverTotal=ncd.groups['MetaData'].variables['cloudCoverTotal'][:]
-#heightOfTopOfCloud=ncd.groups['MetaData'].variables['heightOfTopOfCloud'][:]
+dateTime = ncd.groups['MetaData'].variables['dateTime'][:]
 
-hofx0 = ncd.groups['hofx0'].variables['brightnessTemperature'][:]
 ombg = ncd.groups['ombg'].variables['brightnessTemperature'][:]
 ObsBias0 = ncd.groups['ObsBias0'].variables['brightnessTemperature'][:]
-ObsBias1 = ncd.groups['ObsBias1'].variables['brightnessTemperature'][:]
-ObsBias2 = ncd.groups['ObsBias2'].variables['brightnessTemperature'][:]
 ombnbcData = ombg + ObsBias0
-
 
 DerivedObsValue = ncd.groups['DerivedObsValue'].variables['brightnessTemperature'][:]
 qcflag0 = ncd.groups['EffectiveQC0'].variables['brightnessTemperature'][:]
-qcflag1 = ncd.groups['EffectiveQC1'].variables['brightnessTemperature'][:]
-qcflag2 = ncd.groups['EffectiveQC2'].variables['brightnessTemperature'][:]
 
 
 channels = ncd.variables['Channel'][:]
@@ -79,7 +66,7 @@ channels = ncd.variables['Channel'][:]
 # -----------
 print('dateTime = ', dateTime)
 print('ombg,length=', len(ombg))
-print('tbData shape = ', ombg.shape)
+print('ombg shape = ', ombg.shape)
 print(list(ncd.groups))
 
 # domain set up
@@ -93,36 +80,34 @@ os.makedirs(output_dir1, exist_ok=True)
 os.makedirs(output_dir2, exist_ok=True)
 os.makedirs(output_dir3, exist_ok=True)
 
-variables=['O-B after BC','O-B before BC','HofX']
+variables = ['O-B after BC', 'O-B before BC', 'HofX']
 #variables=['O-B before BC','O-B after BC' ]
 #variables=['HofX']
 
 for variable in variables:
     print(variable)
 
-    for i,ch in enumerate(channels):
-        valid =  qcflag0[:,i] == 0
-        O_B_after_BC  = ombg[valid,i]
-        O_B_before_BC = ombnbcData[valid,i]
-        obs           = DerivedObsValue[valid,i]
+    for i, ch in enumerate(channels):
+        valid = qcflag0[:, i] == 0
+        O_B_after_BC = ombg[valid, i]
+        O_B_before_BC = ombnbcData[valid, i]
+        obs = DerivedObsValue[valid, i]
 
-        if O_B_after_BC.size == 0 :
-           continue
+        if O_B_after_BC.size == 0:
+            continue
 
         lon = lonData[valid]
         lat = latData[valid]
         data_count = np.ma.count(O_B_after_BC)
-
         if variable == 'O-B after BC':
-           obarray=O_B_after_BC
-           output_dir=output_dir1
+            obarray = O_B_after_BC
+            output_dir = output_dir1
         elif variable == 'O-B before BC':
-           obarray=O_B_before_BC
-           output_dir=output_dir2
+            obarray = O_B_before_BC
+            output_dir = output_dir2
         elif variable == 'HofX':
-           obarray = obs - O_B_before_BC
-           output_dir=output_dir3
-
+            obarray = obs - O_B_before_BC
+            output_dir = output_dir3
         stdev = np.nanstd(obarray)  # Standard deviation
         omean = np.nanmean(obarray) # Mean of the data
         datamin = np.nanmin(obarray)  # Min of the data
@@ -142,25 +127,41 @@ for variable in variables:
           [-180, -135, -90, -45, 0, 45, 90, 135, 179.9])
 
 
-        if variable == 'O-B after BC' or variable == 'O-B before BC':
-           cmin=-3
-           cmax=3
+        if variable in ('O-B after BC', 'O-B before BC'):
+            cmin = -3
+            cmax = 3
         elif variable == 'HofX':
-           cmin=datamin
-           cmax=datamax
+            cmin = datamin
+            cmax = datamax
 
-        cmap='jet'
+        cmap = 'jet'
         units = 'K'
 
         print(data_count)
-        sc = ax.scatter(lon, lat,
-                    c=obarray, s=4, linewidth=0,
-                    transform=ccrs.PlateCarree(), cmap=cmap, vmin=cmin, vmax = cmax, norm=None, antialiased=True)
-        if variable == 'O-B after BC' or variable == 'O-B before BC':
-           cbar = plt.colorbar(sc, ax=ax, orientation="horizontal", pad=.1, fraction=0.06,ticks=[-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5, 3 ])
+        sc = ax.scatter(
+            lon,
+            lat,
+            c=obarray,
+            s=4,
+            linewidth=0,
+            transform=ccrs.PlateCarree(),
+            cmap=cmap,
+            vmin=cmin,
+            vmax=cmax,
+            norm=None,
+            antialiased=True,
+        )
+        if variable in ('O-B after BC', 'O-B before BC'):
+            cbar = plt.colorbar(
+                sc,
+                ax=ax,
+                orientation="horizontal",
+                pad=.1,
+                fraction=0.06,
+                ticks=[-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5, 3],
+            )
         elif variable == 'HofX':
-           cbar = plt.colorbar(sc, ax=ax, orientation="horizontal", pad=.1, fraction=0.06)
-
+            cbar = plt.colorbar(sc, ax=ax, orientation="horizontal", pad=.1, fraction=0.06)
         text = f"Total Count:{datcount:0.0f}, Max/Min/Mean/Std: {datamax:0.3f}/{datamin:0.3f}/{omean:0.3f}/{stdev:0.3f} {units}"
         print(text)
         ax.text(0.23, -0.12, text, transform=ax.transAxes, va='bottom', fontsize=8.0)
@@ -174,8 +175,8 @@ for variable in variables:
         #ax.set_extent(conus)
         ax.set_extent(conus_12km)
 
-       # Draw coastlines
-       # ----------------
+        # Draw coastlines
+        # ----------------
         ax.coastlines()
         ax.add_feature(cfeature.STATES, linewidth=0.5)
 
