@@ -1,15 +1,15 @@
 #
-#import ioda
+# import ioda
+import cartopy.feature as cfeature
+import netCDF4 as nc
+import cartopy.crs as ccrs
+import matplotlib.ticker as mticker
+import matplotlib.pyplot as plt
 import os
 import sys
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-import cartopy.crs as ccrs
-import netCDF4 as nc
-import cartopy.feature as cfeature
 
 
 if os.environ.get('LIBDIR') is not None:
@@ -43,12 +43,12 @@ print('nc_dims = ', nc_dims)
 for dim in nc_dims:
     print('nc_dims', dim, len(ncd.dimensions[dim]))
 
-##read in data
+# read in data
 # ---------------------
 latData = ncd.groups['MetaData'].variables['latitude'][:].ravel()
 lonData = ncd.groups['MetaData'].variables['longitude'][:].ravel()
-#satidData = ncd.groups['MetaData'].variables['satelliteId'][:].ravel()
-#tbData = ncd.groups['ObsValue'].variables['brightnessTemperature'][:]
+# satidData = ncd.groups['MetaData'].variables['satelliteId'][:].ravel()
+# tbData = ncd.groups['ObsValue'].variables['brightnessTemperature'][:]
 dateTime = ncd.groups['MetaData'].variables['dateTime'][:]
 
 ombg = ncd.groups['ombg'].variables['brightnessTemperature'][:]
@@ -81,8 +81,8 @@ os.makedirs(output_dir2, exist_ok=True)
 os.makedirs(output_dir3, exist_ok=True)
 
 variables = ['O-B after BC', 'O-B before BC', 'HofX']
-#variables=['O-B before BC','O-B after BC' ]
-#variables=['HofX']
+# variables=['O-B before BC','O-B after BC' ]
+# variables=['HofX']
 
 for variable in variables:
     print(variable)
@@ -109,7 +109,7 @@ for variable in variables:
             obarray = obs - O_B_before_BC
             output_dir = output_dir3
         stdev = np.nanstd(obarray)  # Standard deviation
-        omean = np.nanmean(obarray) # Mean of the data
+        omean = np.nanmean(obarray)  # Mean of the data
         datamin = np.nanmin(obarray)  # Min of the data
         datamax = np.nanmax(obarray)  # Max of the data
         datcount = np.ma.count(obarray)
@@ -119,13 +119,12 @@ for variable in variables:
         # Plot grid lines
         # ----------------
         gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=0), draw_labels=True,
-                      linewidth=1, color='gray', alpha=0.5, linestyle='-')
+                          linewidth=1, color='gray', alpha=0.5, linestyle='-')
         gl.top_labels = False
         gl.xlabel_style = {'size': 10, 'color': 'black'}
         gl.ylabel_style = {'size': 10, 'color': 'black'}
         gl.xlocator = mticker.FixedLocator(
-          [-180, -135, -90, -45, 0, 45, 90, 135, 179.9])
-
+            [-180, -135, -90, -45, 0, 45, 90, 135, 179.9])
 
         if variable in ('O-B after BC', 'O-B before BC'):
             cmin = -3
@@ -167,12 +166,12 @@ for variable in variables:
         ax.text(0.23, -0.12, text, transform=ax.transAxes, va='bottom', fontsize=8.0)
         cbar.ax.set_ylabel(units, fontsize=10)
 
-        #plt.legend(fontsize=6)
+        # plt.legend(fontsize=6)
         plt.title(f"JEDI: CrIS-FSR {variable} for Channel {int(ch)}")
 
         # --------------
-        #ax.set_global()
-        #ax.set_extent(conus)
+        # ax.set_global()
+        # ax.set_extent(conus)
         ax.set_extent(conus_12km)
 
         # Draw coastlines
@@ -180,11 +179,7 @@ for variable in variables:
         ax.coastlines()
         ax.add_feature(cfeature.STATES, linewidth=0.5)
 
-
         save_path = os.path.join(output_dir, f"CrIS-FSR {variable} for_channel_{int(ch)}.png")
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"Saved: {save_path}")
-
-
-
