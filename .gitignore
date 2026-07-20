@@ -177,5 +177,4 @@ notebooks/keyframes
 .githooks
 yaml_factory
 tmp/
-notebooks/domain_boundary_polygon.txt
-docs/notebooks/domain_boundary_polygon.txt
+*_polygon_config.yaml
