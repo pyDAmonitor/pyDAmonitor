@@ -169,28 +169,28 @@ def build_domain_ring(grid_ds):
 def expand_and_simplify_ring(ring, buffer_deg=0.04, min_pts=40, max_pts=80, low_tol=0.001, high_tol=0.16):
     """
     Expands the domain ring outward and dynamically simplifies it.
-    Uses 'buffer_deg + tol' to guarantee that the final simplified polygon 
+    Uses 'buffer_deg + tol' to guarantee that the final simplified polygon
     never shrinks inside the guaranteed safety margin of buffer_deg.
     """
     poly = sg.Polygon(ring)
     best_poly = None
-    
+
     # Run binary search within the specified low_tol and high_tol bounds
     for _ in range(20):
         tol = (low_tol + high_tol) / 2.0
-        
+
         # PADDING TRICK: Expand by (buffer + tol). Even if simplify shaves off 'tol'
         # distance at the corners, the final boundary remains >= buffer_deg away.
         current_buffer = buffer_deg + tol
-        
+
         buffered_poly = poly.buffer(current_buffer, join_style=2)
         simplified = buffered_poly.simplify(tol, preserve_topology=True)
-        
+
         num_pts = len(simplified.exterior.coords) - 1
-        
+
         # Keep track of the current result
         best_poly = simplified
-        
+
         if min_pts <= num_pts <= max_pts:
             break
         elif num_pts > max_pts:
@@ -201,7 +201,7 @@ def expand_and_simplify_ring(ring, buffer_deg=0.04, min_pts=40, max_pts=80, low_
     # Fallback safety check: ensure the final used geometry incorporates the padding
     if best_poly is None:
         best_poly = poly.buffer(buffer_deg + low_tol, join_style=2).simplify(low_tol, preserve_topology=True)
-            
+
     new_ring = np.array(best_poly.exterior.coords)[:-1]
     return new_ring
 
@@ -230,7 +230,7 @@ parser.add_argument('--high_tol', type=float, help='maximum simplification toler
 args = parser.parse_args()
 
 # Assign filenames and arguments
-grid_filename = args.grid 
+grid_filename = args.grid
 indent = args.indent
 buffer_degree = args.buffer
 min_pts = args.min_pts
@@ -245,11 +245,11 @@ ring = build_domain_ring(grid_ds)
 
 # Apply precision expansion and geometric simplification using user arguments
 ring = expand_and_simplify_ring(
-    ring, 
-    buffer_deg=buffer_degree, 
-    min_pts=min_pts, 
-    max_pts=max_pts, 
-    low_tol=low_tol, 
+    ring,
+    buffer_deg=buffer_degree,
+    min_pts=min_pts,
+    max_pts=max_pts,
+    low_tol=low_tol,
     high_tol=high_tol
 )
 
