@@ -34,7 +34,7 @@ else
   if [[ ! -d "${GETKF_DIR}" ]]; then
     export GETKF_DIR=${COMOUT}/getkf_observer/${WGF}
     if [[ ! -d "${GETKF_DIR}" ]]; then
-      export GETKF_DIR=${COMOUT}/getkf_observer_server/${WGF}
+      export GETKF_DIR=${COMOUT}/getkf_observer_solver/${WGF}
     fi
   fi
   export NONVAR_CLD_DIR=${COMOUT}/nonvar_cldana/${WGF}
