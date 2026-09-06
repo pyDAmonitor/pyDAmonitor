@@ -177,4 +177,4 @@ notebooks/keyframes
 .githooks
 yaml_factory
 tmp/
-*_polygon_config.yaml
+*.polygon.yaml
