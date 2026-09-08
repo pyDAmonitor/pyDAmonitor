@@ -164,12 +164,25 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     # vars_to_plot = ['nobs', 'nobs_r', 'n_loop1', 'n_loop2']
     # colors       = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # linestyles   = ['-',       '--',       '-.',       ':']
+
+    # Customization for each use case
     if source == 'jedi':
         vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        linestyles = ['-',       '--',       '-.']
+        ttl = 'obs counts'
     elif source == 'nonvar':
         vars_to_plot = list(tseries[subtypes[0]].keys())
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
-    linestyles = ['-',       '--',       '-.']
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        linestyles = ['-',       '--',       '-.']
+        ttl = 'obs counts'
+    elif source == 'omf':
+        vars_to_plot = list(tseries[subtypes[0]].keys())
+        colors = ['#1f77b4', '#1f77b4', '#ff7f0e', '#ff7f0e']
+        linestyles = ['-', '--', '-', '--']
+        ttl = 'OmF statistics'
+    else:
+        raise ValueError(f"{source} is not a valid source option")
 
     # --- build time axis ---
     first_obs = subtypes[0]
@@ -185,7 +198,7 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     if n_panels == 1:
         axes = [axes]   # keep iterable
 
-    fig.suptitle(f'{group}, obs counts, {daterange}', fontsize=13, fontweight='bold', x=0.4, y=1.002)
+    fig.suptitle(f'{group}, {ttl}, {daterange}', fontsize=13, fontweight='bold', x=0.4, y=1.002)
 
     for ax, obs in zip(axes, subtypes):
         d = tseries[obs]
