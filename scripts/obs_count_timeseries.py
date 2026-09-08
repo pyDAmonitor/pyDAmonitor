@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 # compute the summary in the past 7 days, 30 days
 #
-import sys
 import os
+import sys
 from datetime import datetime, timedelta, timezone
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from typing import Optional
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 # list of observers to plot, add new ones accordingly
 observers = [
+    # CONVENTIONAL
     # adpsfc ----
     'adpsfc_t181', 'adpsfc_t183', 'adpsfc_t187', 'adpsfc_q181', 'adpsfc_q183', 'adpsfc_q187',
     'adpsfc_ps181', 'adpsfc_ps187', 'adpsfc_uv281', 'adpsfc_uv284', 'adpsfc_uv287',
@@ -23,11 +26,37 @@ observers = [
     'sfcshp_ps180', 'sfcshp_uv280', 'sfcshp_uv282', 'sfcshp_uv284',
     # reflectivity ----
     'refl10cm',
+
+    # SATELLITE
+    # CrIS (Cross-track Infrared Sounder)
+    'cris-fsr_n20', 'cris-fsr_n21',
+    # ATMS (Advanced Technology Microwave Sounder (ATMS))
+    'atms_npp', 'atms_n20', 'atms_n21',
+    # ABI (Advanced Baseline Imager)
+    'abi_g16', 'abi_g18'
 ]
+
 obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
 
 
-def read_obs_counts(CDATE, lookback_hours):
+def read_obs_counts(CDATE: str, lookback_hours: int):
+    """
+    Read observation counts from pyDAmonitor `obs_count.txt` files.
+
+    Parameters
+    ----------
+    CDATE : string
+        The current cycle in Zulu time, written in the following format: YYYYMMDDHH
+    lookback_hours : integer
+        Number of hours to look back for the time series
+
+    Returns
+    -------
+    dateBgn : datetime
+        Start of the time series
+    tseries  : dict
+        Nested dictionary with obs counts for each group and subtype
+    """
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
     MY_COM_BASE = os.getenv('MY_COM_BASE', 'MY_COM_BASE_not_defined')
@@ -57,11 +86,11 @@ def read_obs_counts(CDATE, lookback_hours):
                 segments = all_lines[j].split()
                 obs = segments[0].strip()
                 if obs in tseries:
-                    tseries[obs]['n_ioda'][i] = segments[1].strip()
-                    tseries[obs]['nobs'][i] = segments[2].strip()
-                    tseries[obs]['nobs_r'][i] = segments[3].strip()
-                    tseries[obs]['n_loop1'][i] = segments[4].strip()
-                    tseries[obs]['n_loop2'][i] = segments[5].strip()
+                    tseries[obs]['n_ioda'][i] = float(segments[1])
+                    tseries[obs]['nobs'][i] = float(segments[2])
+                    tseries[obs]['nobs_r'][i] = float(segments[3])
+                    tseries[obs]['n_loop1'][i] = float(segments[4])
+                    tseries[obs]['n_loop2'][i] = float(segments[5])
                 else:
                     print(f'"{obs}" is NOT in the observers list')
     # ~~~~~~~~~~~~~~~~~~
@@ -86,7 +115,6 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     tseries  : dict
         Nested dictionary with obs counts for each group and subtype
     """
-    #
     dateEnd = datetime.strptime(CDATE, "%Y%m%d%H").replace(tzinfo=timezone.utc)
     dateBgn = dateEnd - timedelta(hours=lookback_hours)
     #
@@ -134,7 +162,7 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
                 for key in obs_map:
                     if obs == key:
                         group = obs_map[key]
-                        tseries[group][obs][i] = all_lines[j].split()[2].strip()
+                        tseries[group][obs][i] = float(all_lines[j].split()[2])
                         break
     #
     # Rename refl max_val field
@@ -143,7 +171,7 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     return dateBgn, tseries
 
 
-def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_file=None):
+def plot_tseries(tseries: dict, group: str, start_time: datetime, daterange: str, source: str = 'jedi', use_symlog: bool = False, output_file: Optional[str] = None):
     """
     Plot time series for all subtypes in a group.
 
@@ -151,8 +179,10 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     ----------
     tseries     : dict  — the full tseries dictionary
     group       : str   — prefix to filter on, e.g. 'adpsfc'
-    start_time  : str or datetime — start of the time window, e.g. '2024-01-01'
-    source.     : str - data source. Options: 'jedi' or 'nonvar'
+    start_time  : datetime — start of the time window, e.g. '2024-01-01'
+    daterange : str — the date range as a string; can be used in the title
+    source     : str — data source. Options: 'jedi' or 'nonvar'
+    use_symlog : bool — whether or not to use a symmetric logarithmic scale (useful when the total number of observations is much larger than the number of actually assimilated observations)
     output_file : str or None — if given, save figure to this path
     """
     # --- filter observers belonging to this group ---
@@ -168,6 +198,8 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
         vars_to_plot = ['nobs_r', 'n_loop1', 'n_loop2']
     elif source == 'nonvar':
         vars_to_plot = list(tseries[subtypes[0]].keys())
+    else:
+        raise ValueError(f"Unknown source: '{source}'")
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
     linestyles = ['-',       '--',       '-.']
 
@@ -199,9 +231,21 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
                         linewidth=1.2, alpha=0.85)
                 has_data = True
 
-        ax.text(0.02, 0.98, obs, transform=ax.transAxes, fontsize=8, rotation=0, va='top', ha='left')
+        # Calculate total obs in period and place it under the observer name
+        if has_data and source == 'jedi':
+            keys = sorted(k for k in d if k.startswith('n_loop')) + ['nobs_r']
+            totals = {k: np.nansum(np.array(d[k], dtype=float)) for k in keys}
+            ax.text(0.01, 0.91,
+                    "\n".join(f"{k}: {v:,.0f}" for k, v in totals.items()),
+                    transform=ax.transAxes, fontsize=6, va='top', ha='left')
+
+        ax.text(0.01, 0.97, obs, transform=ax.transAxes, fontsize=8, rotation=0, va='top', ha='left')
         ax.tick_params(axis='both', labelsize=8)
         ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.5)
+
+        if use_symlog:  # Use for any observers where nobs_r >> assimilated counts
+            ax.set_yscale('symlog')  # symlog handles cycles where obs counts are 0
+
         if not has_data:
             ax.text(0.5, 0.5, 'no data', transform=ax.transAxes,
                     ha='center', va='center', color='gray', fontsize=9)
@@ -227,6 +271,7 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     if output_file:
         fig.savefig(output_file, dpi=150, bbox_inches='tight')
         print(f"Saved → {output_file}")
+        plt.close(fig)
     else:
         plt.show()
 
@@ -238,7 +283,6 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
 # !!  MAIN starts here !!
 # ***********************************************************************
 if __name__ == '__main__':
-    #
     args = sys.argv
     nargs = len(args) - 1
     if nargs < 2 or len(sys.argv[1]) < 10:
@@ -256,13 +300,18 @@ if __name__ == '__main__':
     plot_tseries(tseries, group='adpsfc_q', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_q.png')
     plot_tseries(tseries, group='adpsfc_uv', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_uv.png')
     plot_tseries(tseries, group='adpsfc_ps', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpsfc_ps.png')
-    #
+
     plot_tseries(tseries, group='adpupa', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_adpupa.png')
     plot_tseries(tseries, group='aircar', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_aircar.png')
     plot_tseries(tseries, group='sfcshp', start_time=dateBgn, daterange=daterange, output_file='obs_count_tseries_sfcshp.png')
     #
     # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
     #
+    # Radiance
+    plot_tseries(tseries, group='cris', start_time=dateBgn, daterange=daterange, use_symlog=True, output_file='obs_count_tseries_cris.png')
+    plot_tseries(tseries, group='atms', start_time=dateBgn, daterange=daterange, use_symlog=True, output_file='obs_count_tseries_atms.png')
+    plot_tseries(tseries, group='abi', start_time=dateBgn, daterange=daterange, use_symlog=False, output_file='obs_count_tseries_abi.png')
+
     # Nonvar cloud analysis obs
     dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
     plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_satellite.png')
