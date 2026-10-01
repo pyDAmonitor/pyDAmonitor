@@ -40,6 +40,8 @@ case ${MACHINE} in
       BASEDIR=/to/be/added
     elif [[ -d /gpfs/f6 ]]; then
       BASEDIR=/gpfs/f6/bil-fire10-oar/world-shared/gge/Miniforge3
+    elif [[ -d /gpfs/f7 ]]; then
+      BASEDIR=/gpfs/f7/wrfruc/world-shared/gge/Miniforge3
     else
       echo "unsupported gaea cluster: ${MACHINE}"
     fi

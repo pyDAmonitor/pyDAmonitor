@@ -28,6 +28,8 @@ case ${MACHINE} in
       BASEDIR=/to/be/added
     elif [[ -d /gpfs/f6 ]]; then
       FIX_RRFS_LOCATION=/gpfs/f6/bil-fire10-oar/world-shared/FIX_pyDAmonitor
+    elif [[ -d /gpfs/f7 ]]; then
+      FIX_RRFS_LOCATION=/gpfs/f7/wrfruc/world-shared/FIX_pyDAmonitor
     else
       echo "unsupported gaea cluster: ${MACHINE}"
     fi

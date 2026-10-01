@@ -30,6 +30,8 @@ case ${MACHINE} in
       EXEC_DIR=/to/be/added
     elif [[ -d /gpfs/f6 ]]; then
       EXEC_DIR=/gpfs/f6/bil-fire10-oar/world-shared/gge/Miniforge3/envs/pyDAmonitor/bin
+    elif [[ -d /gpfs/f7 ]]; then
+      EXEC_DIR=/gpfs/f7/wrfruc/world-shared/gge/Miniforge3/envs/pyDAmonitor/bin
     else
       echo "unsupported gaea cluster: ${MACHINE}"
       exit 1
