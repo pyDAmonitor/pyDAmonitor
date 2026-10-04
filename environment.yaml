@@ -19,6 +19,7 @@ dependencies:
   - jupyter-sphinx
   - jupyter-book
   - matplotlib
+  - micromamba
   - mystmd
   - myst-parser
   - nbclean

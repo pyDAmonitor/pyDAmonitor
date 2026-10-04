@@ -16,9 +16,6 @@ case ${MACHINE} in
   derecho)
     EXEC_DIR=/glade/work/geguo/Miniforge3/envs/pyDAmonitor/bin
     ;;
-  jet)
-    EXEC_DIR=/lfs6/BMC/wrfruc/gge/Miniforge3/envs/pyDAmonitor/bin
-    ;;
   orion)
     EXEC_DIR=/work/noaa/zrtrr/gge/Miniforge3/envs/pyDAmonitor/bin
     ;;

@@ -89,6 +89,9 @@ if [[ "${MACHINE}" == "UNKNOWN" ]]; then
   elif [[ -d /gpfs/f6 && -d /ncrc ]]; then
     # We are on GAEA C6
     MACHINE=gaeac6
+  elif [[ -d /gpfs/f7 && -d /ncrc ]]; then
+    # We are on GAEA C7
+    MACHINE=gaeac7
   elif [[ -d /data/prod ]]; then
     # We are on SSEC's S4
     MACHINE=s4

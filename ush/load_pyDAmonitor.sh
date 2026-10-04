@@ -26,9 +26,6 @@ case ${MACHINE} in
   derecho)
     BASEDIR=/glade/work/geguo/Miniforge3
     ;;
-  jet)
-    BASEDIR=/lfs6/BMC/wrfruc/gge/Miniforge3
-    ;;
   orion)
     BASEDIR=/work/noaa/zrtrr/gge/Miniforge3
     ;;
