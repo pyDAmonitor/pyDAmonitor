@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 
-# Temporary patch: ensures the repository root is on sys.path so `DAmonitor` can be imported until pyDAmonitor itself becomes a module.
+# Temporary workaround: ensures the repository root is on sys.path so `DAmonitor` can be imported
 repo_root = Path(__file__).resolve().parents[1]
 pyDAmonitor_ROOT = os.getenv("pyDAmonitor_ROOT")
 if (repo_root / "DAmonitor").is_dir():
@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
         "requested_channels",
         type=int,
         nargs="*",
-        help="List of which channels to plot. Omitting this argument will make the script plot all channels found in the jdiag file for the given observer",
+        help="List of which channels to plot. Omitting this argument will make the script plot all channels found in the jdiag file for the given observer that are assimilated in the requested lookback period.",
     )
 
     return parser.parse_args()
@@ -207,7 +207,7 @@ def read_channel_counts(filepath: Path) -> dict[int, int]:
 
 def list_missing_files(missing_files: list[datetime], observer: str) -> None:
     """
-    Reports hours in the lookback window without an {observer}.txt file. 
+    Reports hours in the lookback window without an {observer}.txt file.
 
     This is usually expected (the cycle was not assimilated, or the observer had no observations), so the list is logged as info.
 
@@ -290,7 +290,7 @@ def plot_channel_counts(requested_channels: list[int], observer: str, timeline: 
         timeline (list[datetime]): List that contains each hour of the lookback period as a datetime entry
         channel_counts (dict[int, int]): Dictionary containing the total observations per channel summed across all cycles in the lookback period
         n_existing_files (int): The number of cycles present in the lookback period (i.e. the number of cycles with data)
-        label_channels (Optional[list[int]], optional): Label only these channels on the x-axis for visual purposes. Defaults to None, which labels every channel in requested_channels.
+        label_channels (Optional[list[int]], optional): Label only these channels on the x-axis for visual purposes. Defaults to None, which labels every plotted channel.
         figures_dir (str, optional): The directory that figures save to. Defaults to the working directory
 
     Returns:
@@ -354,7 +354,7 @@ def plot_channel_counts(requested_channels: list[int], observer: str, timeline: 
             for ch in channels
         ]
 
-        ax.set_xticks(ticks=range(len(channel_labels)))  # Show the full extent...
+        ax.set_xticks(ticks=range(len(channel_labels)))  # Show ticks at every bar...
         ax.set_xticklabels(labels=xtick_labels)  # ... but only label the specified channels
 
     # TITLE
@@ -409,7 +409,7 @@ def main(CDATE: str, lookback_hours: int, observer: str, requested_channels: Opt
         CDATE (str): The current cycle in Zulu time, written in the following format: YYYYMMDDHH
         lookback_hours (int): The number of hours to look back in the past (0 gives the current cycle)
         observer (str): The name of the observer (e.g. `cris-fsr_n20`)
-        requested_channels (Optional[list[int]], optional): List of which channels to plot. Defaults to None, which plots all channels found in the jdiag file.
+        requested_channels (Optional[list[int]], optional): List of which channels to plot. Defaults to None, which makes the script plot all channels found in the jdiag file for the given observer that are assimilated in the requested lookback period.
         label_channels (Optional[list[int]], optional): Label only these channels on the x-axis for visual purposes. Defaults to None, which labels every plotted channel.
         figures_dir (str, optional): The directory that figures save to. Defaults to the working directory.
 
@@ -469,7 +469,7 @@ def main(CDATE: str, lookback_hours: int, observer: str, requested_channels: Opt
             if ch not in channel_data:
                 unassimilated_channels[ch].append(dt)
                 continue
-            channel_totals[ch] += channel_data[ch]  # Note: Requested channels that are present in observer files but have 0 assimilated observations will still be retained.
+            channel_totals[ch] += channel_data[ch]  # Note: requested channels present in observer files with n_loop1 = 0 are retained (plotted as zero-height bars).
 
     n_existing_files = len(timeline) - len(missing_files)
     if n_existing_files == 0:
