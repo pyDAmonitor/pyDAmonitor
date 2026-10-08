@@ -23,7 +23,14 @@ observers = [
     'sfcshp_ps180', 'sfcshp_uv280', 'sfcshp_uv282', 'sfcshp_uv284',
     # reflectivity ----
     'refl10cm',
+    # CrIS ----
+    'cris-fsr_n20', 'cris-fsr_n21',
+    # ATMS ----
+    'atms_npp', 'atms_n20', 'atms_n21',
+    # ABI ----
+    'abi_g16', 'abi_g18',
 ]
+
 obs_counts = ['n_ioda', 'nobs', 'nobs_r', 'n_loop1', 'n_loop2']
 
 
@@ -143,7 +150,7 @@ def read_nonvar_cld_obs_counts(CDATE, lookback_hours):
     return dateBgn, tseries
 
 
-def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_file=None):
+def plot_tseries(tseries, group, start_time, daterange, source='jedi', use_symlog=False, output_file=None):
     """
     Plot time series for all subtypes in a group.
 
@@ -153,6 +160,7 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     group       : str   — prefix to filter on, e.g. 'adpsfc'
     start_time  : str or datetime — start of the time window, e.g. '2024-01-01'
     source.     : str - data source. Options: 'jedi' or 'nonvar'
+    use_symlog : bool — whether or not to use a symmetric logarithmic y-scale (useful when nobs_r >> assimilated counts)
     output_file : str or None — if given, save figure to this path
     """
     # --- filter observers belonging to this group ---
@@ -199,9 +207,21 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
                         linewidth=1.2, alpha=0.85)
                 has_data = True
 
+        # Calculate total obs in period and place it under the observer name
+        if has_data and source == 'jedi':
+            keys = sorted(k for k in d if k.startswith('n_loop')) + ['nobs_r']
+            totals = {k: np.nansum(np.array(d[k], dtype=float)) for k in keys}
+            ax.text(0.02, 0.92,
+                    "\n".join(f"{k}: {v:,.0f}" for k, v in totals.items()),
+                    transform=ax.transAxes, fontsize=6, va='top', ha='left')
+
         ax.text(0.02, 0.98, obs, transform=ax.transAxes, fontsize=8, rotation=0, va='top', ha='left')
         ax.tick_params(axis='both', labelsize=8)
         ax.grid(True, linestyle=':', linewidth=0.5, alpha=0.5)
+
+        if use_symlog:  # Use for any observers where nobs_r >> assimilated counts
+            ax.set_yscale('symlog')  # symlog handles cycles where obs counts are 0
+
         if not has_data:
             ax.text(0.5, 0.5, 'no data', transform=ax.transAxes,
                     ha='center', va='center', color='gray', fontsize=9)
@@ -227,6 +247,7 @@ def plot_tseries(tseries, group, start_time, daterange, source='jedi', output_fi
     if output_file:
         fig.savefig(output_file, dpi=150, bbox_inches='tight')
         print(f"Saved → {output_file}")
+        plt.close(fig)
     else:
         plt.show()
 
@@ -263,6 +284,11 @@ if __name__ == '__main__':
     #
     # print(tseries['aircar_t133']['nobs_r'])  # for debugging only
     #
+    # Radiance
+    plot_tseries(tseries, group='cris', start_time=dateBgn, daterange=daterange, use_symlog=True, output_file='obs_count_tseries_cris.png')
+    plot_tseries(tseries, group='atms', start_time=dateBgn, daterange=daterange, use_symlog=True, output_file='obs_count_tseries_atms.png')
+    plot_tseries(tseries, group='abi', start_time=dateBgn, daterange=daterange, use_symlog=False, output_file='obs_count_tseries_abi.png')
+
     # Nonvar cloud analysis obs
     dateBgn, tseries = read_nonvar_cld_obs_counts(CDATE, lookback_hours)
     plot_tseries(tseries, group='nonvar_satellite', start_time=dateBgn, daterange=daterange, source='nonvar', output_file='obs_count_tseries_nonvar_satellite.png')
