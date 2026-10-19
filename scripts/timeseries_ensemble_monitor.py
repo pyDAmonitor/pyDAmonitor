@@ -35,8 +35,8 @@ observers = [
 
 # Clean Dictionary Mapping with Lists as Values (Handles multiple fields under 'uv')
 VAR_MAP = {
-    "t":  ["airTemperature"],
-    "q":  ["specificHumidity"],
+    "t":  ["airTemperature", "airTemperatureAt2M"],
+    "q":  ["specificHumidity", "specificHumidityAt2M"],
     "ps": ["stationPressure"],
     "uv": ["windEastward", "windNorthward"]
 }
